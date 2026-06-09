@@ -1,0 +1,15 @@
+# Dependencias
+node_modules/
+
+# Artefactos de wrangler / Cloudflare
+.wrangler/
+
+# Copia local usada para Direct Upload (el deploy por Git sirve desde la raíz)
+dist/
+
+# Config local de preview de Claude Code
+.claude/
+
+# Sistema
+Thumbs.db
+.DS_Store

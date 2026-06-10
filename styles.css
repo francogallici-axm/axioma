@@ -167,16 +167,12 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
   width: min(70vw, 640px);
   height: min(70vw, 640px);
   color: var(--teal);
-  opacity: 0.04;
+  opacity: 0.06;
   pointer-events: none;
 }
 .hero-inner {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr;     /* mobile: una columna */
-  gap: 48px;
-  align-items: center;
-  width: 100%;
+  max-width: 860px;
 }
 
 .hero-eyebrow {
@@ -184,15 +180,105 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
   letter-spacing: 4px;
   font-size: 0.78rem;
   color: var(--teal);
-  margin-bottom: 22px;
+  margin-bottom: 28px;
 }
-.hero-headline {
+
+/* ---------- Pilares: Tiempos · Costos · Calidad (checklist animado) ---------- */
+.pillars {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 32px;
+}
+/* línea conectora vertical detrás de los checkboxes */
+.pillars::before {
+  content: "";
+  position: absolute;
+  left: 18px;                       /* centro del checkbox (36/2) */
+  top: 1.2em;
+  bottom: 1.2em;
+  width: 2px;
+  background: var(--teal);
+  opacity: 0.16;
+}
+.pillar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.pillar-box {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(126, 176, 177, 0.4);
+  background: var(--green-deep);
+  display: grid;
+  place-items: center;
+}
+.pillar-check {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--green-dark);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;             /* oculto hasta "checkear" */
+}
+.pillar-text {
   font-family: var(--font-serif);
-  font-size: clamp(1.7rem, 4.4vw, 2.4rem);
-  line-height: 1.25;
+  font-size: clamp(2.3rem, 6.5vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: 1px;
   color: var(--white);
-  margin-bottom: 26px;
-  max-width: 18ch;
+  opacity: 0.3;                      /* tenue hasta iluminarse */
+}
+
+/* Spotlight en la palabra + checkbox que se enciende, en secuencia. Período 6s. */
+.pillar--1 .pillar-text  { animation: pl-word-1  6s ease-in-out infinite; }
+.pillar--2 .pillar-text  { animation: pl-word-2  6s ease-in-out infinite; }
+.pillar--3 .pillar-text  { animation: pl-word-3  6s ease-in-out infinite; }
+.pillar--1 .pillar-box   { animation: pl-box-1   6s ease-in-out infinite; }
+.pillar--2 .pillar-box   { animation: pl-box-2   6s ease-in-out infinite; }
+.pillar--3 .pillar-box   { animation: pl-box-3   6s ease-in-out infinite; }
+.pillar--1 .pillar-check { animation: pl-check-1 6s ease-in-out infinite; }
+.pillar--2 .pillar-check { animation: pl-check-2 6s ease-in-out infinite; }
+.pillar--3 .pillar-check { animation: pl-check-3 6s ease-in-out infinite; }
+
+@keyframes pl-word-1 { 0%,4%{opacity:1} 30%{opacity:1} 38%{opacity:.3} 96%{opacity:.3} 100%{opacity:1} }
+@keyframes pl-word-2 { 0%,33%{opacity:.3} 39%{opacity:1} 63%{opacity:1} 71%{opacity:.3} 100%{opacity:.3} }
+@keyframes pl-word-3 { 0%,66%{opacity:.3} 72%{opacity:1} 96%{opacity:1} 100%{opacity:.3} }
+
+@keyframes pl-box-1 {
+  0%,3%   { background: var(--green-deep); border-color: rgba(126,176,177,.4); box-shadow: 0 0 0 rgba(126,176,177,0); }
+  9%      { background: var(--teal); border-color: var(--teal); box-shadow: 0 0 16px rgba(126,176,177,.6); }
+  30%,100%{ background: var(--teal); border-color: var(--teal); box-shadow: 0 0 0 rgba(126,176,177,0); }
+}
+@keyframes pl-box-2 {
+  0%,33%  { background: var(--green-deep); border-color: rgba(126,176,177,.4); box-shadow: 0 0 0 rgba(126,176,177,0); }
+  40%     { background: var(--teal); border-color: var(--teal); box-shadow: 0 0 16px rgba(126,176,177,.6); }
+  63%,100%{ background: var(--teal); border-color: var(--teal); box-shadow: 0 0 0 rgba(126,176,177,0); }
+}
+@keyframes pl-box-3 {
+  0%,66%  { background: var(--green-deep); border-color: rgba(126,176,177,.4); box-shadow: 0 0 0 rgba(126,176,177,0); }
+  73%     { background: var(--teal); border-color: var(--teal); box-shadow: 0 0 16px rgba(126,176,177,.6); }
+  96%,100%{ background: var(--teal); border-color: var(--teal); box-shadow: 0 0 0 rgba(126,176,177,0); }
+}
+@keyframes pl-check-1 { 0%,4%{stroke-dashoffset:26} 12%{stroke-dashoffset:0} 100%{stroke-dashoffset:0} }
+@keyframes pl-check-2 { 0%,34%{stroke-dashoffset:26} 42%{stroke-dashoffset:0} 100%{stroke-dashoffset:0} }
+@keyframes pl-check-3 { 0%,67%{stroke-dashoffset:26} 75%{stroke-dashoffset:0} 100%{stroke-dashoffset:0} }
+
+.hero-subtitle {
+  font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+  font-weight: 300;
+  color: var(--cream);
+  margin-bottom: 22px;
+  max-width: 560px;
 }
 .hero-lead {
   font-size: 1rem;
@@ -202,39 +288,11 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
 }
 .hero-lead:last-of-type { margin-bottom: 40px; }  /* aire antes del botón */
 
-/* ---------- Diagrama del ciclo (Tiempos · Costos · Calidad) ---------- */
-.hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.cycle {
-  width: 100%;
-  max-width: 380px;
-  height: auto;
-  animation: cy-float 7s ease-in-out infinite;
-}
-.cycle .cy-labels text {
-  font-size: 23px;
-  letter-spacing: 1px;
-}
-/* el punto de acento deja una leve estela con un pulso suave */
-.cycle .cy-ring { transform-box: view-box; transform-origin: 180px 150px; }
-
-@keyframes cy-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-
-/* utilidad para texto solo accesible a lectores de pantalla / SEO */
-.visually-hidden {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+/* Sin movimiento: pilares iluminados y checkeados de forma fija */
+@media (prefers-reduced-motion: reduce) {
+  .pillar-text { opacity: 1; animation: none; }
+  .pillar-box { background: var(--teal); border-color: var(--teal); animation: none; }
+  .pillar-check { stroke-dashoffset: 0; animation: none; }
 }
 
 /* ============================================================
@@ -362,16 +420,6 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-/* Desktop / tablet ancho: hero en dos columnas (texto + ciclo) */
-@media (min-width: 900px) {
-  .hero-inner {
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 56px;
-  }
-  .hero-visual { justify-content: flex-end; }
-  .cycle { max-width: 440px; }
-}
-
 @media (max-width: 860px) {
   .nav-links {
     position: fixed;

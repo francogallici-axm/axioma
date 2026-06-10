@@ -69,18 +69,63 @@
     <section class="hero" id="inicio">
       <svg class="hero-bg-mark" aria-hidden="true"><use href="#axioma-mark" /></svg>
       <div class="container hero-inner reveal">
-        <p class="hero-eyebrow">Consultoría en Optimización de Procesos</p>
-        <h1 class="hero-title"><span class="word">Tiempos</span><span class="dot">·</span><span class="word">Costos</span><span class="dot">·</span><span class="word">Calidad</span></h1>
-        <p class="hero-subtitle">Ayudamos a PyMEs a mejorar sus procesos a través de la tecnología.</p>
-        <p class="hero-lead">
-          Digitalizamos, automatizamos y optimizamos operaciones para reducir costos,
-          mejorar tiempos y aumentar el control de la gestión.
-        </p>
-        <p class="hero-lead">
-          Trabajamos por objetivos y resultados concretos, con soluciones adaptadas
-          a la realidad de cada empresa.
-        </p>
-        <a href="#quienes-somos" class="btn btn-primary">Conocé cómo trabajamos</a>
+        <div class="hero-text">
+          <p class="hero-eyebrow">Consultoría en Optimización de Procesos</p>
+          <h1 class="visually-hidden">Tiempos · Costos · Calidad</h1>
+          <p class="hero-headline">Ayudamos a PyMEs a mejorar sus procesos a través de la tecnología.</p>
+          <p class="hero-lead">
+            Digitalizamos, automatizamos y optimizamos operaciones para reducir costos,
+            mejorar tiempos y aumentar el control de la gestión.
+          </p>
+          <p class="hero-lead">
+            Trabajamos por objetivos y resultados concretos, con soluciones adaptadas
+            a la realidad de cada empresa.
+          </p>
+          <a href="#quienes-somos" class="btn btn-primary">Conocé cómo trabajamos</a>
+        </div>
+
+        <!-- Ciclo de mejora continua: Tiempos -> Costos -> Calidad -->
+        <div class="hero-visual" aria-hidden="true">
+          <svg class="cycle" viewBox="0 0 360 320" role="img" aria-label="Ciclo de mejora continua: Tiempos, Costos y Calidad">
+            <defs>
+              <marker id="cy-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10" fill="none" stroke="#7eb0b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </marker>
+            </defs>
+
+            <!-- anillo guía -->
+            <circle class="cy-ring" cx="180" cy="150" r="92" fill="none" stroke="#7eb0b1" stroke-opacity="0.18" stroke-width="1.5" />
+
+            <!-- flechas del ciclo (sentido horario) -->
+            <g class="cy-arcs" fill="none" stroke="#7eb0b1" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round" marker-end="url(#cy-arrow)">
+              <path d="M 214.5,64.7 A 92,92 0 0 1 271.1,162.8" />
+              <path d="M 236.6,222.5 A 92,92 0 0 1 123.4,222.5" />
+              <path d="M 88.9,162.8 A 92,92 0 0 1 145.5,64.7" />
+            </g>
+
+            <!-- nodos -->
+            <g fill="#7eb0b1">
+              <circle cx="180" cy="58" r="5" />
+              <circle cx="247.5" cy="189" r="5" />
+              <circle cx="112.5" cy="189" r="5" />
+            </g>
+
+            <!-- punto de acento que recorre el ciclo -->
+            <g>
+              <circle r="6" fill="#e8dcc8">
+                <animateMotion dur="9s" repeatCount="indefinite" rotate="auto"
+                  path="M 180,58 A 92,92 0 1 1 179.9,58 Z" />
+              </circle>
+            </g>
+
+            <!-- etiquetas -->
+            <g class="cy-labels" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+              <text x="180" y="38">Tiempos</text>
+              <text x="274" y="206">Costos</text>
+              <text x="86" y="206">Calidad</text>
+            </g>
+          </svg>
+        </div>
       </div>
     </section>
 

@@ -60,4 +60,13 @@
     // Fallback: mostrar todo
     revealEls.forEach(function (el) { el.classList.add("visible"); });
   }
+
+  /* ---------- 4. Respetar reduced-motion en animaciones SVG (SMIL) ---------- */
+  // La regla CSS de prefers-reduced-motion no alcanza a SMIL (animateMotion),
+  // así que pausamos las animaciones del SVG manualmente.
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll("svg.cycle").forEach(function (svg) {
+      if (typeof svg.pauseAnimations === "function") svg.pauseAnimations();
+    });
+  }
 })();

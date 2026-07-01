@@ -111,7 +111,14 @@ async function saveContent(env, partial) {
 function jsonResponse(data, init = {}) {
   return new Response(JSON.stringify(data), {
     ...init,
-    headers: { "Content-Type": "application/json; charset=utf-8", ...(init.headers || {}) },
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      // Estas respuestas son dinámicas (contenido editable, estadísticas en
+      // vivo): nunca deben quedar cacheadas por el navegador ni por el borde
+      // de Cloudflare, o un cambio recién guardado podría no reflejarse.
+      "Cache-Control": "no-store",
+      ...(init.headers || {}),
+    },
   });
 }
 

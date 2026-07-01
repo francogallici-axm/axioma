@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel de Axioma Consulting</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    /* Estilos propios del panel: reutilizan las variables de marca de styles.css */
+    body { min-height: 100vh; padding: 0 0 80px; }
+    .admin-header {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+      padding: 18px 28px;
+      background: rgba(7, 37, 40, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(232, 220, 200, 0.1);
+    }
+    .admin-header h1 { font-size: 1.15rem; color: var(--white); }
+    .admin-user { font-size: 0.85rem; color: var(--cream); opacity: 0.8; }
+    .admin-actions { display: flex; align-items: center; gap: 14px; }
+    .admin-actions a { font-size: 0.9rem; color: var(--teal); }
+    .admin-main { max-width: 760px; margin: 0 auto; padding: 32px 24px 0; }
+    .admin-status {
+      margin-bottom: 24px; padding: 12px 16px; border-radius: 4px;
+      font-size: 0.92rem; display: none;
+    }
+    .admin-status.show { display: block; }
+    .admin-status.ok { background: rgba(126, 176, 177, 0.15); color: var(--teal); border: 1px solid rgba(126,176,177,0.4); }
+    .admin-status.error { background: rgba(200, 90, 90, 0.15); color: #e6a2a2; border: 1px solid rgba(200,90,90,0.4); }
+    .admin-section { margin-bottom: 40px; }
+    .admin-section h2 {
+      font-family: var(--font-sans); font-size: 0.8rem; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--teal); margin-bottom: 18px;
+      padding-bottom: 10px; border-bottom: 1px solid rgba(232,220,200,0.12);
+    }
+    .admin-field { margin-bottom: 18px; }
+    .admin-field label { display: block; font-size: 0.85rem; color: var(--cream); margin-bottom: 6px; }
+    .admin-field input[type="text"], .admin-field textarea {
+      width: 100%; font-family: var(--font-sans); font-size: 0.95rem; color: var(--white);
+      background: var(--green-dark); border: 1px solid rgba(232,220,200,0.18);
+      border-radius: 3px; padding: 11px 13px; resize: vertical;
+    }
+    .admin-field input[type="text"]:focus, .admin-field textarea:focus {
+      outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(126,176,177,0.15);
+    }
+    .admin-save-bar {
+      position: sticky; bottom: 0; margin-top: 8px; padding: 18px 24px;
+      background: rgba(7, 37, 40, 0.96); backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(232,220,200,0.1);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .admin-save-bar .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .admin-loading { padding: 60px 0; text-align: center; color: var(--cream); opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <header class="admin-header">
+    <h1>Panel de Axioma Consulting</h1>
+    <div class="admin-actions">
+      <span class="admin-user" id="adminUser"></span>
+      <a href="/" target="_blank" rel="noopener">Ver sitio ↗</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-status" id="statusBox"></div>
+    <div class="admin-loading" id="loading">Cargando contenido…</div>
+    <form id="contentForm" hidden></form>
+  </main>
+
+  <div class="admin-save-bar" id="saveBar" hidden>
+    <button type="submit" form="contentForm" class="btn btn-primary" id="saveBtn">Guardar cambios</button>
+    <span class="admin-user" id="saveHint">Los cambios se publican al instante en el sitio.</span>
+  </div>
+
+  <script>
+    // Mismo esquema que src/content.js — si se agrega un campo nuevo ahí,
+    // agregarlo también acá para que aparezca en el panel.
+    const SCHEMA = [
+      { section: "Hero", fields: [
+        { key: "hero.eyebrow", label: "Texto pequeño superior", type: "text" },
+        { key: "hero.pillar1", label: "Pilar 1", type: "text" },
+        { key: "hero.pillar2", label: "Pilar 2", type: "text" },
+        { key: "hero.pillar3", label: "Pilar 3", type: "text" },
+        { key: "hero.subtitle", label: "Subtítulo", type: "textarea" },
+        { key: "hero.lead1", label: "Bajada, párrafo 1", type: "textarea" },
+        { key: "hero.lead2", label: "Bajada, párrafo 2", type: "textarea" },
+        { key: "hero.cta", label: "Texto del botón principal", type: "text" },
+      ]},
+      { section: "Quiénes somos", fields: [
+        { key: "quienes.kicker", label: "Etiqueta de sección", type: "text" },
+        { key: "quienes.title", label: "Título", type: "text" },
+        { key: "quienes.p1", label: "Párrafo 1", type: "textarea" },
+        { key: "quienes.highlight", label: "Frase destacada", type: "textarea" },
+        { key: "quienes.p2", label: "Párrafo 2", type: "textarea" },
+        { key: "card1.title", label: "Tarjeta 1 · título", type: "text" },
+        { key: "card1.desc", label: "Tarjeta 1 · descripción", type: "textarea" },
+        { key: "card2.title", label: "Tarjeta 2 · título", type: "text" },
+        { key: "card2.desc", label: "Tarjeta 2 · descripción", type: "textarea" },
+        { key: "card3.title", label: "Tarjeta 3 · título", type: "text" },
+        { key: "card3.desc", label: "Tarjeta 3 · descripción", type: "textarea" },
+      ]},
+      { section: "Contacto", fields: [
+        { key: "contacto.kicker", label: "Etiqueta de sección", type: "text" },
+        { key: "contacto.title", label: "Título", type: "text" },
+        { key: "contacto.intro", label: "Texto de introducción", type: "textarea" },
+        { key: "contacto.formSubmit", label: "Texto del botón de envío", type: "text" },
+      ]},
+      { section: "Footer", fields: [
+        { key: "footer.copyright", label: "Texto de copyright", type: "text" },
+      ]},
+    ];
+
+    const form = document.getElementById("contentForm");
+    const loading = document.getElementById("loading");
+    const statusBox = document.getElementById("statusBox");
+    const saveBar = document.getElementById("saveBar");
+    const saveBtn = document.getElementById("saveBtn");
+    const adminUser = document.getElementById("adminUser");
+
+    function showStatus(message, kind) {
+      statusBox.textContent = message;
+      statusBox.className = "admin-status show " + kind;
+    }
+
+    function buildForm(content) {
+      SCHEMA.forEach(function (group) {
+        const section = document.createElement("div");
+        section.className = "admin-section";
+
+        const h2 = document.createElement("h2");
+        h2.textContent = group.section;
+        section.appendChild(h2);
+
+        group.fields.forEach(function (field) {
+          const wrap = document.createElement("div");
+          wrap.className = "admin-field";
+
+          const label = document.createElement("label");
+          label.setAttribute("for", field.key);
+          label.textContent = field.label;
+          wrap.appendChild(label);
+
+          const input = document.createElement(field.type === "textarea" ? "textarea" : "input");
+          if (field.type !== "textarea") input.type = "text";
+          else input.rows = 3;
+          input.id = field.key;
+          input.name = field.key;
+          input.value = content[field.key] || "";
+          wrap.appendChild(input);
+
+          section.appendChild(wrap);
+        });
+
+        form.appendChild(section);
+      });
+
+      loading.hidden = true;
+      form.hidden = false;
+      saveBar.hidden = false;
+    }
+
+    async function loadIdentity() {
+      try {
+        const res = await fetch("/cdn-cgi/access/get-identity", { credentials: "include" });
+        if (!res.ok) return;
+        const identity = await res.json();
+        if (identity && identity.email) {
+          adminUser.textContent = "Conectado como " + identity.email;
+        }
+      } catch {
+        // En desarrollo local sin Cloudflare Access no hay identidad disponible.
+      }
+    }
+
+    async function loadContent() {
+      const res = await fetch("/admin/api/content");
+      if (!res.ok) throw new Error("No se pudo cargar el contenido");
+      return res.json();
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando…";
+      try {
+        const data = {};
+        SCHEMA.forEach(function (group) {
+          group.fields.forEach(function (field) {
+            data[field.key] = document.getElementById(field.key).value;
+          });
+        });
+        const res = await fetch("/admin/api/content", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error("Error al guardar (" + res.status + ")");
+        showStatus("Cambios guardados. Ya están publicados en el sitio.", "ok");
+      } catch (err) {
+        showStatus("No se pudo guardar: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Guardar cambios";
+      }
+    });
+
+    loadIdentity();
+    loadContent()
+      .then(buildForm)
+      .catch(function (err) {
+        loading.textContent = "Error al cargar el contenido: " + err.message;
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Archivos que NO deben quedar publicados como assets estáticos.
+# (Esto es independiente de git: controla qué sube Cloudflare al servir el sitio.)
+
+src/
+wrangler.jsonc
+.assetsignore
+.gitignore
+README.md
+node_modules/
+.wrangler/
+.git/
+.claude/
+dist/

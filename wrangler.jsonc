@@ -20,9 +20,7 @@
   "kv_namespaces": [
     {
       "binding": "CONTENT_KV",
-      // TODO: reemplazar por el ID real del namespace antes de mergear a main
-      // (ver README.md, sección "Panel de administración").
-      "id": "REPLACE_WITH_REAL_KV_NAMESPACE_ID",
+      "id": "2271763a0df84bc2ac7eb6bddceacec4",
       "preview_id": "axioma-content-local-dev"
     }
   ]

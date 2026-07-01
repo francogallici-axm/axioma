@@ -2,6 +2,86 @@ import { DEFAULT_CONTENT } from "./content.js";
 
 const CONTENT_KEY = "content"; // única key de KV donde vive el JSON de overrides
 
+// Token del beacon de Cloudflare Web Analytics (index.html). No es secreto:
+// ya está público en el HTML, es el identificador del sitio ("siteTag") en
+// la API de Analytics.
+const ANALYTICS_SITE_TAG = "7b7af660163146bebe42965e51f5e306";
+const ANALYTICS_WINDOW_DAYS = 30;
+
+/**
+ * Trae un resumen de Cloudflare Web Analytics (visitas totales y páginas más
+ * vistas de los últimos ANALYTICS_WINDOW_DAYS días) vía la GraphQL Analytics
+ * API. Requiere los secrets CF_ANALYTICS_TOKEN y CF_ACCOUNT_ID configurados
+ * en el Worker; si no están, o si la consulta falla, devuelve null (el panel
+ * lo muestra como "no disponible" en vez de romperse).
+ */
+async function getAnalytics(env) {
+  if (!env.CF_ANALYTICS_TOKEN || !env.CF_ACCOUNT_ID) return null;
+
+  const until = new Date();
+  const since = new Date(until.getTime() - ANALYTICS_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+  const query = `
+    query WebAnalytics($accountTag: String!, $siteTag: String!, $since: Time!, $until: Time!) {
+      viewer {
+        accounts(filter: { accountTag: $accountTag }) {
+          totals: rumPageloadEventsAdaptiveGroups(
+            filter: { AND: [{ datetime_geq: $since, datetime_leq: $until }, { siteTag: $siteTag }, { bot: 0 }] }
+            limit: 1
+          ) {
+            sum { visits }
+          }
+          topPages: rumPageloadEventsAdaptiveGroups(
+            filter: { AND: [{ datetime_geq: $since, datetime_leq: $until }, { siteTag: $siteTag }, { bot: 0 }] }
+            limit: 5
+            orderBy: [sum_visits_DESC]
+          ) {
+            sum { visits }
+            dimensions { requestPath }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const res = await fetch("https://api.cloudflare.com/client/v4/graphql", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.CF_ANALYTICS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query,
+        variables: {
+          accountTag: env.CF_ACCOUNT_ID,
+          siteTag: ANALYTICS_SITE_TAG,
+          since: since.toISOString(),
+          until: until.toISOString(),
+        },
+      }),
+    });
+
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.errors) return null;
+
+    const account = json.data?.viewer?.accounts?.[0];
+    if (!account) return null;
+
+    return {
+      windowDays: ANALYTICS_WINDOW_DAYS,
+      totalVisits: account.totals?.[0]?.sum?.visits ?? 0,
+      topPages: (account.topPages || []).map((row) => ({
+        path: row.dimensions?.requestPath || "/",
+        visits: row.sum?.visits ?? 0,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Lee el contenido actual: valores por defecto + overrides guardados en KV.
  * Si KV falla o está vacío, devuelve los valores por defecto (nunca rompe el sitio).
@@ -77,6 +157,12 @@ export default {
       }
 
       return jsonResponse({ error: "Método no permitido" }, { status: 405 });
+    }
+
+    // ---------- Estadísticas (protegida por Cloudflare Access en /admin*) ----------
+    if (pathname === "/admin/api/analytics" && request.method === "GET") {
+      const analytics = await getAnalytics(env);
+      return jsonResponse(analytics); // null si no está configurado o falló
     }
 
     // ---------- Panel de administración (protegido por Cloudflare Access) ----------

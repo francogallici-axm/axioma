@@ -55,6 +55,20 @@
     }
     .admin-save-bar .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .admin-loading { padding: 60px 0; text-align: center; color: var(--cream); opacity: 0.7; }
+
+    /* ---------- Estadísticas ---------- */
+    .stats-grid { display: flex; flex-wrap: wrap; gap: 32px; margin-bottom: 22px; }
+    .stat-box .stat-number { font-family: var(--font-serif); font-size: 2.4rem; color: var(--white); line-height: 1; }
+    .stat-box .stat-label { font-size: 0.8rem; color: var(--cream); opacity: 0.75; margin-top: 6px; }
+    .stats-pages { list-style: none; }
+    .stats-pages li {
+      display: flex; justify-content: space-between; gap: 16px;
+      padding: 9px 0; font-size: 0.9rem;
+      border-bottom: 1px solid rgba(232,220,200,0.08);
+    }
+    .stats-pages li span:first-child { color: var(--cream); }
+    .stats-pages li span:last-child { color: var(--white); font-variant-numeric: tabular-nums; }
+    .stats-empty { font-size: 0.9rem; color: var(--cream); opacity: 0.65; }
   </style>
 </head>
 <body>
@@ -68,6 +82,12 @@
 
   <main class="admin-main">
     <div class="admin-status" id="statusBox"></div>
+
+    <div class="admin-section">
+      <h2>Estadísticas</h2>
+      <div id="statsBody" class="stats-empty">Cargando estadísticas…</div>
+    </div>
+
     <div class="admin-loading" id="loading">Cargando contenido…</div>
     <form id="contentForm" hidden></form>
   </main>
@@ -183,6 +203,49 @@
       return res.json();
     }
 
+    async function loadAnalytics() {
+      const statsBody = document.getElementById("statsBody");
+      try {
+        const res = await fetch("/admin/api/analytics");
+        const data = res.ok ? await res.json() : null;
+
+        if (!data) {
+          statsBody.className = "stats-empty";
+          statsBody.textContent =
+            "Estadísticas no disponibles todavía (falta configurar el acceso a Cloudflare Analytics, o el sitio todavía no tiene visitas registradas).";
+          return;
+        }
+
+        statsBody.className = "";
+        statsBody.innerHTML = "";
+
+        const grid = document.createElement("div");
+        grid.className = "stats-grid";
+        const box = document.createElement("div");
+        box.className = "stat-box";
+        box.innerHTML =
+          '<div class="stat-number">' + data.totalVisits + '</div>' +
+          '<div class="stat-label">Visitas · últimos ' + data.windowDays + ' días</div>';
+        grid.appendChild(box);
+        statsBody.appendChild(grid);
+
+        if (data.topPages && data.topPages.length) {
+          const list = document.createElement("ul");
+          list.className = "stats-pages";
+          data.topPages.forEach(function (page) {
+            const li = document.createElement("li");
+            li.innerHTML =
+              "<span>" + page.path + "</span><span>" + page.visits + "</span>";
+            list.appendChild(li);
+          });
+          statsBody.appendChild(list);
+        }
+      } catch {
+        statsBody.className = "stats-empty";
+        statsBody.textContent = "No se pudieron cargar las estadísticas.";
+      }
+    }
+
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
       saveBtn.disabled = true;
@@ -210,6 +273,7 @@
     });
 
     loadIdentity();
+    loadAnalytics();
     loadContent()
       .then(buildForm)
       .catch(function (err) {

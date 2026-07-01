@@ -1,0 +1,12 @@
+# Copiar a .dev.vars (ignorado por git) y completar con valores reales
+# para probar la seccion de estadisticas con `wrangler dev` en local.
+#
+# En produccion estos NO van en wrangler.jsonc: se cargan como Secrets
+# desde el dashboard de Cloudflare (Workers & Pages > axioma-consulting >
+# Settings > Variables and Secrets) o con `wrangler secret put`.
+
+# API Token con permiso "Account Analytics: Read" (My Profile > API Tokens)
+CF_ANALYTICS_TOKEN=
+
+# Account ID de Cloudflare (Workers & Pages > panel derecho)
+CF_ACCOUNT_ID=

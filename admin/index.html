@@ -216,6 +216,14 @@
           return;
         }
 
+        // Diagnostico temporal: mientras depuramos, mostramos el detalle en
+        // vez del resumen si el backend devuelve informacion de debug.
+        if (data.debug) {
+          statsBody.className = "stats-empty";
+          statsBody.textContent = "[Diagnóstico] " + JSON.stringify(data);
+          return;
+        }
+
         statsBody.className = "";
         statsBody.innerHTML = "";
 

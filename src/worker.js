@@ -16,7 +16,9 @@ const ANALYTICS_WINDOW_DAYS = 30;
  * lo muestra como "no disponible" en vez de romperse).
  */
 async function getAnalytics(env) {
-  if (!env.CF_ANALYTICS_TOKEN || !env.CF_ACCOUNT_ID) return null;
+  if (!env.CF_ANALYTICS_TOKEN || !env.CF_ACCOUNT_ID) {
+    return { debug: "missing-secrets", hasToken: !!env.CF_ANALYTICS_TOKEN, hasAccountId: !!env.CF_ACCOUNT_ID };
+  }
 
   const until = new Date();
   const since = new Date(until.getTime() - ANALYTICS_WINDOW_DAYS * 24 * 60 * 60 * 1000);
@@ -62,12 +64,19 @@ async function getAnalytics(env) {
       }),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "");
+      return { debug: "http-error", status: res.status, body: bodyText.slice(0, 500) };
+    }
     const json = await res.json();
-    if (json.errors) return null;
+    if (json.errors) {
+      return { debug: "graphql-errors", errors: json.errors };
+    }
 
     const account = json.data?.viewer?.accounts?.[0];
-    if (!account) return null;
+    if (!account) {
+      return { debug: "no-account-in-response", raw: JSON.stringify(json).slice(0, 500) };
+    }
 
     return {
       windowDays: ANALYTICS_WINDOW_DAYS,
@@ -77,8 +86,8 @@ async function getAnalytics(env) {
         visits: row.sum?.visits ?? 0,
       })),
     };
-  } catch {
-    return null;
+  } catch (err) {
+    return { debug: "exception", message: String(err && err.message ? err.message : err) };
   }
 }
 

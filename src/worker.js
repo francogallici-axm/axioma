@@ -135,6 +135,43 @@ class ContentInjector {
   }
 }
 
+/**
+ * Regenera el bloque JSON-LD de FAQPage a partir del contenido actual, para
+ * que los datos estructurados que lee Google nunca queden desincronizados de
+ * las preguntas que realmente se ven en la página (Google penaliza esa
+ * discrepancia).
+ */
+class FaqSchemaInjector {
+  constructor(content) {
+    this.content = content;
+  }
+  element(el) {
+    const mainEntity = [];
+    for (let i = 1; i <= 6; i++) {
+      const question = this.content[`faq.q${i}`];
+      const answer = this.content[`faq.a${i}`];
+      if (!question || !answer) continue;
+      mainEntity.push({
+        "@type": "Question",
+        name: question,
+        acceptedAnswer: { "@type": "Answer", text: answer },
+      });
+    }
+
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "@id": "https://www.axiomaconsulting.com.ar/#faq",
+      mainEntity,
+    };
+
+    // JSON.stringify ya escapa comillas y barras; además cortamos cualquier
+    // "</script>" para que un texto editado no pueda romper la etiqueta.
+    const json = JSON.stringify(schema, null, 2).replace(/<\//g, "<\\/");
+    el.setInnerContent(json, { html: true });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -187,6 +224,9 @@ export default {
     if (!contentType.includes("text/html")) return response;
 
     const content = await getContent(env);
-    return new HTMLRewriter().on("[data-key]", new ContentInjector(content)).transform(response);
+    return new HTMLRewriter()
+      .on("[data-key]", new ContentInjector(content))
+      .on("script#faq-jsonld", new FaqSchemaInjector(content))
+      .transform(response);
   },
 };

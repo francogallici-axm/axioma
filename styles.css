@@ -504,6 +504,13 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
 .footer-link-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .footer-link:hover { color: var(--white); }
 .copyright { font-size: 0.85rem; color: rgba(255, 255, 255, 0.55); }
+.footer-admin {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.38);
+  border-bottom: 1px solid transparent;
+  transition: color .25s ease, border-color .25s ease;
+}
+.footer-admin:hover { color: var(--teal); border-color: var(--teal); }
 
 /* ============================================================
    ANIMACIÓN REVEAL (fade-in en scroll)

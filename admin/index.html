@@ -69,6 +69,40 @@
     .stats-pages li span:first-child { color: var(--cream); }
     .stats-pages li span:last-child { color: var(--white); font-variant-numeric: tabular-nums; }
     .stats-empty { font-size: 0.9rem; color: var(--cream); opacity: 0.65; }
+
+    /* ---------- Navegación por pestañas ---------- */
+    .admin-nav {
+      display: flex;
+      gap: 4px;
+      padding: 0 28px;
+      background: rgba(7, 37, 40, 0.96);
+      border-bottom: 1px solid rgba(232, 220, 200, 0.1);
+      position: sticky;
+      top: 62px;
+      z-index: 9;
+    }
+    .admin-nav button {
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.6);
+      background: none;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: color .2s ease, border-color .2s ease;
+    }
+    .admin-nav button:hover { color: var(--white); }
+    .admin-nav button[aria-selected="true"] {
+      color: var(--teal);
+      border-bottom-color: var(--teal);
+    }
+    .admin-page[hidden] { display: none; }
+    .admin-page-intro {
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 28px;
+    }
   </style>
 </head>
 <body>
@@ -80,16 +114,33 @@
     </div>
   </header>
 
+  <nav class="admin-nav" role="tablist" aria-label="Secciones del panel">
+    <button type="button" role="tab" id="tabContenido" aria-selected="true" aria-controls="pageContenido">Contenido</button>
+    <button type="button" role="tab" id="tabReportes" aria-selected="false" aria-controls="pageReportes">Reportes</button>
+  </nav>
+
   <main class="admin-main">
     <div class="admin-status" id="statusBox"></div>
 
-    <div class="admin-section">
-      <h2>Estadísticas</h2>
-      <div id="statsBody" class="stats-empty">Cargando estadísticas…</div>
-    </div>
+    <!-- ---------- Página: Contenido ---------- -->
+    <section class="admin-page" id="pageContenido" role="tabpanel" aria-labelledby="tabContenido">
+      <p class="admin-page-intro">
+        Editá los textos de la landing. Los cambios se publican al instante.
+      </p>
+      <div class="admin-loading" id="loading">Cargando contenido…</div>
+      <form id="contentForm" hidden></form>
+    </section>
 
-    <div class="admin-loading" id="loading">Cargando contenido…</div>
-    <form id="contentForm" hidden></form>
+    <!-- ---------- Página: Reportes ---------- -->
+    <section class="admin-page" id="pageReportes" role="tabpanel" aria-labelledby="tabReportes" hidden>
+      <p class="admin-page-intro">
+        Actividad del sitio web.
+      </p>
+      <div class="admin-section">
+        <h2>Estadísticas</h2>
+        <div id="statsBody" class="stats-empty">Cargando estadísticas…</div>
+      </div>
+    </section>
   </main>
 
   <div class="admin-save-bar" id="saveBar" hidden>
@@ -128,6 +179,22 @@
         { key: "calc.kicker", label: "Etiqueta de sección", type: "text" },
         { key: "calc.title", label: "Título", type: "text" },
         { key: "calc.intro", label: "Texto de introducción", type: "textarea" },
+      ]},
+      { section: "Preguntas frecuentes", fields: [
+        { key: "faq.kicker", label: "Etiqueta de sección", type: "text" },
+        { key: "faq.title", label: "Título", type: "text" },
+        { key: "faq.q1", label: "Pregunta 1", type: "text" },
+        { key: "faq.a1", label: "Respuesta 1", type: "textarea" },
+        { key: "faq.q2", label: "Pregunta 2", type: "text" },
+        { key: "faq.a2", label: "Respuesta 2", type: "textarea" },
+        { key: "faq.q3", label: "Pregunta 3", type: "text" },
+        { key: "faq.a3", label: "Respuesta 3", type: "textarea" },
+        { key: "faq.q4", label: "Pregunta 4", type: "text" },
+        { key: "faq.a4", label: "Respuesta 4", type: "textarea" },
+        { key: "faq.q5", label: "Pregunta 5", type: "text" },
+        { key: "faq.a5", label: "Respuesta 5", type: "textarea" },
+        { key: "faq.q6", label: "Pregunta 6", type: "text" },
+        { key: "faq.a6", label: "Respuesta 6", type: "textarea" },
       ]},
       { section: "Contacto", fields: [
         { key: "contacto.kicker", label: "Etiqueta de sección", type: "text" },
@@ -186,7 +253,9 @@
 
       loading.hidden = true;
       form.hidden = false;
-      saveBar.hidden = false;
+      // Solo mostramos la barra de guardado si el usuario está parado en la
+      // pestaña de contenido (puede haber cambiado a Reportes mientras cargaba).
+      saveBar.hidden = document.getElementById("pageContenido").hidden;
     }
 
     async function loadIdentity() {
@@ -276,6 +345,30 @@
         saveBtn.textContent = "Guardar cambios";
       }
     });
+
+    /* ---------- Navegación entre páginas del panel ---------- */
+    (function initTabs() {
+      var tabs = [
+        { btn: document.getElementById("tabContenido"), page: document.getElementById("pageContenido") },
+        { btn: document.getElementById("tabReportes"), page: document.getElementById("pageReportes") },
+      ];
+
+      function activar(indice) {
+        tabs.forEach(function (t, i) {
+          var activa = i === indice;
+          t.btn.setAttribute("aria-selected", String(activa));
+          t.page.hidden = !activa;
+        });
+        // La barra de guardado solo tiene sentido en la página de contenido,
+        // y solo una vez que el formulario ya cargó.
+        saveBar.hidden = indice !== 0 || form.hidden;
+        statusBox.className = "admin-status";
+      }
+
+      tabs.forEach(function (t, i) {
+        t.btn.addEventListener("click", function () { activar(i); });
+      });
+    })();
 
     loadIdentity();
     loadAnalytics();

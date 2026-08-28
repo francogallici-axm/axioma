@@ -80,6 +80,14 @@ async function getAnalytics(env) {
             sum { visits }
             dimensions { refererHost }
           }
+          series: rumPageloadEventsAdaptiveGroups(
+            filter: { AND: [{ datetime_geq: $since, datetime_leq: $until }, { siteTag: $siteTag }, { bot: 0 }] }
+            limit: 5000
+            orderBy: [date_ASC]
+          ) {
+            sum { visits }
+            dimensions { date refererHost }
+          }
         }
       }
     }
@@ -122,6 +130,14 @@ async function getAnalytics(env) {
       .sort((a, b) => b.visits - a.visits)
       .slice(0, 8);
 
+    // Serie temporal: una fila por día y fuente, para poder graficar tanto el
+    // total como el desglose por origen sin volver a consultar la API.
+    const series = (account.series || []).map((row) => ({
+      date: row.dimensions?.date,
+      source: nombreDeFuente(row.dimensions?.refererHost),
+      visits: row.sum?.visits ?? 0,
+    }));
+
     return {
       windowDays: ANALYTICS_WINDOW_DAYS,
       totalVisits: account.totals?.[0]?.sum?.visits ?? 0,
@@ -130,6 +146,11 @@ async function getAnalytics(env) {
         visits: row.sum?.visits ?? 0,
       })),
       sources,
+      series,
+      // Rango consultado, para que el gráfico dibuje el eje completo aunque
+      // algunos días no tengan visitas.
+      since: since.toISOString().slice(0, 10),
+      until: until.toISOString().slice(0, 10),
     };
   } catch {
     return null;

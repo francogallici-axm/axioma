@@ -148,6 +148,60 @@
     }
     .stats-subtitle:first-of-type { margin-top: 6px; }
 
+    /* ---------- Gráfico de evolución ---------- */
+    /* Paleta categórica validada con el script de la guía de dataviz
+       (6 slots, todos los chequeos OK sobre la superficie #072528). */
+    .chart-filters {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
+    }
+    .seg { display: inline-flex; border: 1px solid rgba(232,220,200,0.18); border-radius: 5px; overflow: hidden; }
+    .seg-btn {
+      font-family: var(--font-sans); font-size: 0.85rem;
+      background: none; border: 0; color: rgba(255,255,255,0.6);
+      padding: 8px 15px; cursor: pointer;
+      transition: background-color .18s ease, color .18s ease;
+    }
+    .seg-btn + .seg-btn { border-left: 1px solid rgba(232,220,200,0.18); }
+    .seg-btn:hover { color: var(--white); }
+    .seg-btn[aria-pressed="true"] { background: rgba(126,176,177,0.18); color: var(--teal); }
+
+    .chart-wrap { position: relative; }
+    .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .chart-grid line { stroke: rgba(232,220,200,0.10); stroke-width: 1; }
+    .chart-axis text { fill: rgba(255,255,255,0.5); font-size: 11px; font-family: var(--font-sans); }
+    .chart-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+    .chart-dot { r: 4; stroke: #072528; stroke-width: 2; }
+    .chart-hover-line { stroke: rgba(232,220,200,0.35); stroke-width: 1; }
+
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; }
+    .chart-legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 0.83rem; color: rgba(255,255,255,0.75); }
+    .chart-legend i { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+    .chart-tooltip {
+      position: absolute; pointer-events: none; z-index: 5;
+      background: #041b1d; border: 1px solid rgba(232,220,200,0.22);
+      border-radius: 5px; padding: 9px 12px; font-size: 0.82rem;
+      color: var(--white); white-space: nowrap;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      opacity: 0; transition: opacity .12s ease;
+    }
+    .chart-tooltip.show { opacity: 1; }
+    .chart-tooltip b { font-weight: 500; color: var(--cream); }
+    .chart-tooltip ul { list-style: none; margin: 5px 0 0; }
+    .chart-tooltip li { display: flex; align-items: center; gap: 7px; padding: 1px 0; }
+    .chart-tooltip i { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+    .chart-tooltip .val { margin-left: auto; padding-left: 14px; font-variant-numeric: tabular-nums; }
+
+    .chart-table { margin-top: 14px; font-size: 0.85rem; }
+    .chart-table summary { cursor: pointer; color: var(--teal); }
+    .chart-table table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .chart-table th, .chart-table td {
+      text-align: left; padding: 5px 8px; border-bottom: 1px solid rgba(232,220,200,0.08);
+      color: rgba(255,255,255,0.75); font-weight: 400;
+    }
+    .chart-table th { color: var(--cream); }
+    .chart-table td.num, .chart-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
     /* ---------- Navegación por pestañas ---------- */
     .admin-nav {
       display: flex;
@@ -274,9 +328,29 @@
       <p class="admin-page-intro">
         Actividad del sitio web.
       </p>
-      <div class="admin-section">
-        <h2>Estadísticas</h2>
+      <div class="admin-card">
+        <h2>Visitas</h2>
         <div id="statsBody" class="stats-empty">Cargando estadísticas…</div>
+      </div>
+
+      <div class="admin-card" id="chartCard">
+        <h2>Evolución</h2>
+        <div class="chart-filters">
+          <div class="seg" role="group" aria-label="Qué mostrar">
+            <button type="button" class="seg-btn" data-metric="total" aria-pressed="true">Visitas</button>
+            <button type="button" class="seg-btn" data-metric="sources" aria-pressed="false">Por origen</button>
+          </div>
+          <div class="seg" role="group" aria-label="Agrupar por">
+            <button type="button" class="seg-btn" data-bucket="day" aria-pressed="true">Por día</button>
+            <button type="button" class="seg-btn" data-bucket="week" aria-pressed="false">Por semana</button>
+          </div>
+        </div>
+        <div id="chartBody"></div>
+      </div>
+
+      <div class="admin-card" id="sourcesCard">
+        <h2>De dónde llegan las visitas</h2>
+        <div id="sourcesBody" class="stats-empty">Cargando…</div>
       </div>
     </section>
   </main>
@@ -550,64 +624,372 @@
       faqCard.hidden = false;
     }
 
+    /* ================= Estadísticas y gráfico ================= */
+
+    // Paleta categórica validada con scripts/validate_palette.js de la guía de
+    // dataviz: 6 slots, todos los chequeos OK sobre la superficie #072528.
+    // El orden es fijo: el color acompaña a la fuente, no a su posición.
+    const PALETA = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#9085e9"];
+    const COLOR_TOTAL = "#7eb0b1"; // serie única: color de marca
+
+    let datosAnalytics = null;
+    let metricaActual = "total";   // "total" | "sources"
+    let periodoActual = "day";     // "day" | "week"
+
+    function textoElemento(tag, clase, texto) {
+      const el = document.createElement(tag);
+      if (clase) el.className = clase;
+      if (texto !== undefined) el.textContent = texto;
+      return el;
+    }
+
+    /** Lista "etiqueta … valor". Usa textContent: los datos vienen de analytics
+     *  (rutas y dominios que puede provocar cualquier visitante). */
+    function pintarLista(contenedor, filas, obtenerEtiqueta, mensajeVacio) {
+      contenedor.innerHTML = "";
+      if (!filas || !filas.length) {
+        contenedor.className = "stats-empty";
+        contenedor.textContent = mensajeVacio;
+        return;
+      }
+      contenedor.className = "";
+      const list = textoElemento("ul", "stats-pages");
+      filas.forEach(function (fila) {
+        const li = document.createElement("li");
+        li.appendChild(textoElemento("span", null, obtenerEtiqueta(fila)));
+        li.appendChild(textoElemento("span", null, fila.visits));
+        list.appendChild(li);
+      });
+      contenedor.appendChild(list);
+    }
+
+    /* ---------- Preparación de la serie temporal ---------- */
+
+    function claveDePeriodo(fechaISO) {
+      if (periodoActual === "day") return fechaISO;
+      // Semana: la agrupamos por el lunes correspondiente.
+      const d = new Date(fechaISO + "T00:00:00Z");
+      const diaSemana = (d.getUTCDay() + 6) % 7; // 0 = lunes
+      d.setUTCDate(d.getUTCDate() - diaSemana);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function etiquetaDePeriodo(clave) {
+      const d = new Date(clave + "T00:00:00Z");
+      const txt = d.toLocaleDateString("es-AR", { day: "numeric", month: "short", timeZone: "UTC" });
+      return periodoActual === "week" ? "Sem. " + txt : txt;
+    }
+
+    /** Arma {periodos, series} listos para dibujar, según metrica y periodo. */
+    function prepararSeries() {
+      const filas = (datosAnalytics && datosAnalytics.series) || [];
+
+      // Eje completo aunque falten días sin visitas.
+      const periodos = [];
+      const vistos = new Set();
+      const desde = new Date(datosAnalytics.since + "T00:00:00Z");
+      const hasta = new Date(datosAnalytics.until + "T00:00:00Z");
+      for (let d = new Date(desde); d <= hasta; d.setUTCDate(d.getUTCDate() + 1)) {
+        const clave = claveDePeriodo(d.toISOString().slice(0, 10));
+        if (!vistos.has(clave)) { vistos.add(clave); periodos.push(clave); }
+      }
+
+      if (metricaActual === "total") {
+        const porPeriodo = new Map(periodos.map(function (p) { return [p, 0]; }));
+        filas.forEach(function (f) {
+          const k = claveDePeriodo(f.date);
+          if (porPeriodo.has(k)) porPeriodo.set(k, porPeriodo.get(k) + f.visits);
+        });
+        return {
+          periodos: periodos,
+          series: [{ nombre: "Visitas", color: COLOR_TOTAL, valores: periodos.map(function (p) { return porPeriodo.get(p); }) }],
+        };
+      }
+
+      // Por origen: nos quedamos con las 5 fuentes con más visitas y el resto
+      // se agrupa en "Otros" (la guía prohíbe generar colores nuevos).
+      const totalPorFuente = new Map();
+      filas.forEach(function (f) {
+        totalPorFuente.set(f.source, (totalPorFuente.get(f.source) || 0) + f.visits);
+      });
+      const top = [...totalPorFuente.entries()]
+        .sort(function (a, b) { return b[1] - a[1]; })
+        .slice(0, 5)
+        .map(function (e) { return e[0]; });
+      const hayOtros = totalPorFuente.size > top.length;
+      const nombres = hayOtros ? top.concat(["Otros"]) : top;
+
+      const mapa = new Map(nombres.map(function (n) {
+        return [n, new Map(periodos.map(function (p) { return [p, 0]; }))];
+      }));
+      filas.forEach(function (f) {
+        const nombre = top.indexOf(f.source) >= 0 ? f.source : "Otros";
+        const serie = mapa.get(nombre);
+        if (!serie) return;
+        const k = claveDePeriodo(f.date);
+        if (serie.has(k)) serie.set(k, serie.get(k) + f.visits);
+      });
+
+      return {
+        periodos: periodos,
+        series: nombres.map(function (nombre, i) {
+          return {
+            nombre: nombre,
+            color: PALETA[i % PALETA.length],
+            valores: periodos.map(function (p) { return mapa.get(nombre).get(p); }),
+          };
+        }),
+      };
+    }
+
+    /* ---------- Dibujo del gráfico ---------- */
+
+    function dibujarGrafico() {
+      const cont = document.getElementById("chartBody");
+      cont.innerHTML = "";
+
+      if (!datosAnalytics) {
+        cont.className = "stats-empty";
+        cont.textContent = "Sin datos para graficar todavía.";
+        return;
+      }
+      cont.className = "";
+
+      const { periodos, series } = prepararSeries();
+      const maxValor = Math.max(1, ...series.flatMap(function (s) { return s.valores; }));
+
+      const W = 720, H = 260;
+      const M = { top: 12, right: 14, bottom: 28, left: 42 };
+      const ancho = W - M.left - M.right;
+      const alto = H - M.top - M.bottom;
+      const x = function (i) {
+        return periodos.length === 1 ? M.left + ancho / 2
+          : M.left + (i / (periodos.length - 1)) * ancho;
+      };
+      const y = function (v) { return M.top + alto - (v / maxValor) * alto; };
+
+      const NS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label",
+        "Evolución de " + (metricaActual === "total" ? "visitas" : "visitas por origen") +
+        ", agrupado por " + (periodoActual === "day" ? "día" : "semana"));
+
+      function nodo(tag, attrs) {
+        const el = document.createElementNS(NS, tag);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        return el;
+      }
+
+      // Grilla y eje Y (recesivos, como pide la guía)
+      const pasos = 4;
+      const gGrid = nodo("g", { class: "chart-grid" });
+      const gAxis = nodo("g", { class: "chart-axis" });
+      for (let i = 0; i <= pasos; i++) {
+        const v = Math.round((maxValor / pasos) * i);
+        const yy = y(v);
+        gGrid.appendChild(nodo("line", { x1: M.left, x2: W - M.right, y1: yy, y2: yy }));
+        const t = nodo("text", { x: M.left - 9, y: yy + 4, "text-anchor": "end" });
+        t.textContent = v;
+        gAxis.appendChild(t);
+      }
+      svg.appendChild(gGrid);
+
+      // Eje X: como máximo 6 etiquetas para que no se pisen
+      const paso = Math.max(1, Math.ceil(periodos.length / 6));
+      periodos.forEach(function (p, i) {
+        if (i % paso !== 0 && i !== periodos.length - 1) return;
+        const t = nodo("text", { x: x(i), y: H - 8, "text-anchor": "middle" });
+        t.textContent = etiquetaDePeriodo(p);
+        gAxis.appendChild(t);
+      });
+      svg.appendChild(gAxis);
+
+      // Línea de referencia del hover
+      const hoverLine = nodo("line", { class: "chart-hover-line", y1: M.top, y2: M.top + alto, opacity: 0 });
+      svg.appendChild(hoverLine);
+
+      // Series
+      const puntosPorSerie = [];
+      series.forEach(function (s) {
+        const d = s.valores.map(function (v, i) { return (i ? "L" : "M") + x(i) + " " + y(v); }).join(" ");
+        svg.appendChild(nodo("path", { class: "chart-line", d: d, stroke: s.color }));
+
+        const gPuntos = nodo("g", { opacity: 0 });
+        const puntos = s.valores.map(function (v, i) {
+          const c = nodo("circle", { class: "chart-dot", cx: x(i), cy: y(v), fill: s.color });
+          gPuntos.appendChild(c);
+          return c;
+        });
+        puntosPorSerie.push({ serie: s, grupo: gPuntos, puntos: puntos });
+        svg.appendChild(gPuntos);
+      });
+
+      const wrap = textoElemento("div", "chart-wrap");
+      const chart = textoElemento("div", "chart");
+      chart.appendChild(svg);
+      wrap.appendChild(chart);
+
+      const tooltip = textoElemento("div", "chart-tooltip");
+      wrap.appendChild(tooltip);
+      cont.appendChild(wrap);
+
+      // Capa de hover: crosshair + tooltip (la guía la pide por defecto)
+      const capa = nodo("rect", {
+        x: M.left, y: M.top, width: ancho, height: alto, fill: "transparent",
+      });
+      svg.appendChild(capa);
+
+      function indiceMasCercano(clientX) {
+        const caja = svg.getBoundingClientRect();
+        const rel = ((clientX - caja.left) / caja.width) * W;
+        let mejor = 0, mejorDist = Infinity;
+        periodos.forEach(function (_, i) {
+          const dist = Math.abs(x(i) - rel);
+          if (dist < mejorDist) { mejorDist = dist; mejor = i; }
+        });
+        return mejor;
+      }
+
+      function mostrarTooltip(evt) {
+        const i = indiceMasCercano(evt.clientX);
+        hoverLine.setAttribute("opacity", 1);
+        hoverLine.setAttribute("x1", x(i));
+        hoverLine.setAttribute("x2", x(i));
+        puntosPorSerie.forEach(function (p) {
+          p.grupo.setAttribute("opacity", 1);
+          p.puntos.forEach(function (c, j) { c.setAttribute("opacity", j === i ? 1 : 0); });
+        });
+
+        tooltip.innerHTML = "";
+        tooltip.appendChild(textoElemento("b", null, etiquetaDePeriodo(periodos[i])));
+        const ul = document.createElement("ul");
+        series.forEach(function (s) {
+          const li = document.createElement("li");
+          const sw = document.createElement("i");
+          sw.style.background = s.color;
+          li.appendChild(sw);
+          li.appendChild(textoElemento("span", null, s.nombre));
+          li.appendChild(textoElemento("span", "val", s.valores[i]));
+          ul.appendChild(li);
+        });
+        tooltip.appendChild(ul);
+        tooltip.classList.add("show");
+
+        const caja = svg.getBoundingClientRect();
+        const px = (x(i) / W) * caja.width;
+        const anchoTip = tooltip.offsetWidth;
+        tooltip.style.left = Math.max(0, Math.min(px + 14, caja.width - anchoTip)) + "px";
+        tooltip.style.top = "8px";
+      }
+
+      function ocultarTooltip() {
+        tooltip.classList.remove("show");
+        hoverLine.setAttribute("opacity", 0);
+        puntosPorSerie.forEach(function (p) { p.grupo.setAttribute("opacity", 0); });
+      }
+
+      capa.addEventListener("mousemove", mostrarTooltip);
+      capa.addEventListener("mouseleave", ocultarTooltip);
+
+      // Leyenda: obligatoria con 2 o más series
+      if (series.length > 1) {
+        const leyenda = textoElemento("div", "chart-legend");
+        series.forEach(function (s) {
+          const item = document.createElement("span");
+          const sw = document.createElement("i");
+          sw.style.background = s.color;
+          item.appendChild(sw);
+          item.appendChild(textoElemento("span", null, s.nombre));
+          leyenda.appendChild(item);
+        });
+        cont.appendChild(leyenda);
+      }
+
+      // Vista de tabla: alternativa accesible a la lectura visual
+      const det = textoElemento("details", "chart-table");
+      det.appendChild(textoElemento("summary", null, "Ver los datos como tabla"));
+      const tabla = document.createElement("table");
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+      trh.appendChild(textoElemento("th", null, periodoActual === "day" ? "Día" : "Semana"));
+      series.forEach(function (s) { trh.appendChild(textoElemento("th", "num", s.nombre)); });
+      thead.appendChild(trh);
+      tabla.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      periodos.forEach(function (p, i) {
+        const tr = document.createElement("tr");
+        tr.appendChild(textoElemento("td", null, etiquetaDePeriodo(p)));
+        series.forEach(function (s) { tr.appendChild(textoElemento("td", "num", s.valores[i])); });
+        tbody.appendChild(tr);
+      });
+      tabla.appendChild(tbody);
+      det.appendChild(tabla);
+      cont.appendChild(det);
+    }
+
+    // Filtros del gráfico
+    document.querySelectorAll(".seg-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const grupo = btn.parentElement;
+        grupo.querySelectorAll(".seg-btn").forEach(function (b) {
+          b.setAttribute("aria-pressed", String(b === btn));
+        });
+        if (btn.dataset.metric) metricaActual = btn.dataset.metric;
+        if (btn.dataset.bucket) periodoActual = btn.dataset.bucket;
+        dibujarGrafico();
+      });
+    });
+
     async function loadAnalytics() {
       const statsBody = document.getElementById("statsBody");
+      const sourcesBody = document.getElementById("sourcesBody");
       try {
         const res = await fetch("/admin/api/analytics");
         const data = res.ok ? await res.json() : null;
 
         if (!data) {
-          statsBody.className = "stats-empty";
-          statsBody.textContent =
+          const aviso =
             "Estadísticas no disponibles todavía (falta configurar el acceso a Cloudflare Analytics, o el sitio todavía no tiene visitas registradas).";
+          statsBody.className = "stats-empty";
+          statsBody.textContent = aviso;
+          sourcesBody.className = "stats-empty";
+          sourcesBody.textContent = aviso;
+          dibujarGrafico();
           return;
         }
 
+        datosAnalytics = data;
+
+        // Número grande + páginas más vistas
         statsBody.className = "";
         statsBody.innerHTML = "";
-
-        const grid = document.createElement("div");
-        grid.className = "stats-grid";
-        const box = document.createElement("div");
-        box.className = "stat-box";
-        box.innerHTML =
-          '<div class="stat-number">' + data.totalVisits + '</div>' +
-          '<div class="stat-label">Visitas · últimos ' + data.windowDays + ' días</div>';
+        const grid = textoElemento("div", "stats-grid");
+        const box = textoElemento("div", "stat-box");
+        box.appendChild(textoElemento("div", "stat-number", data.totalVisits));
+        box.appendChild(textoElemento("div", "stat-label", "Visitas · últimos " + data.windowDays + " días"));
         grid.appendChild(box);
         statsBody.appendChild(grid);
 
-        // Construye una lista "etiqueta … valor". Usa textContent en vez de
-        // innerHTML: los datos vienen de analytics (rutas y dominios que
-        // puede provocar cualquier visitante), así que no deben interpretarse
-        // como HTML.
-        function listaDeStats(titulo, filas, obtenerEtiqueta) {
-          if (!filas || !filas.length) return;
+        const subPaginas = textoElemento("h3", "stats-subtitle", "Páginas más vistas");
+        statsBody.appendChild(subPaginas);
+        const contPaginas = document.createElement("div");
+        statsBody.appendChild(contPaginas);
+        pintarLista(contPaginas, data.topPages, function (f) { return f.path; },
+          "Todavía no hay páginas con visitas registradas.");
 
-          const h3 = document.createElement("h3");
-          h3.className = "stats-subtitle";
-          h3.textContent = titulo;
-          statsBody.appendChild(h3);
+        // Orígenes, como componente propio
+        pintarLista(sourcesBody, data.sources, function (f) { return f.name; },
+          "Todavía no hay visitas registradas, así que no hay orígenes para mostrar. " +
+          "Van a aparecer acá apenas alguien visite el sitio.");
 
-          const list = document.createElement("ul");
-          list.className = "stats-pages";
-          filas.forEach(function (fila) {
-            const li = document.createElement("li");
-            const etiqueta = document.createElement("span");
-            etiqueta.textContent = obtenerEtiqueta(fila);
-            const valor = document.createElement("span");
-            valor.textContent = fila.visits;
-            li.appendChild(etiqueta);
-            li.appendChild(valor);
-            list.appendChild(li);
-          });
-          statsBody.appendChild(list);
-        }
-
-        listaDeStats("De dónde llegan las visitas", data.sources, function (f) { return f.name; });
-        listaDeStats("Páginas más vistas", data.topPages, function (f) { return f.path; });
+        dibujarGrafico();
       } catch {
         statsBody.className = "stats-empty";
         statsBody.textContent = "No se pudieron cargar las estadísticas.";
+        sourcesBody.className = "stats-empty";
+        sourcesBody.textContent = "No se pudieron cargar los orígenes.";
       }
     }
 

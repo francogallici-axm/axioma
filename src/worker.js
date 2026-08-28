@@ -1,4 +1,4 @@
-import { DEFAULT_CONTENT } from "./content.js";
+import { DEFAULT_CONTENT, DEFAULT_FAQ, FAQ_LIST_KEY, MAX_FAQ_ITEMS } from "./content.js";
 
 const CONTENT_KEY = "content"; // única key de KV donde vive el JSON de overrides
 
@@ -108,6 +108,44 @@ async function saveContent(env, partial) {
   return next;
 }
 
+/** Lista de FAQs guardada (o la de por defecto si todavía no se editó). */
+async function getFaq(env) {
+  if (!env.CONTENT_KV) return [...DEFAULT_FAQ];
+  try {
+    const stored = await env.CONTENT_KV.get(FAQ_LIST_KEY, "json");
+    return Array.isArray(stored) && stored.length ? stored : [...DEFAULT_FAQ];
+  } catch {
+    return [...DEFAULT_FAQ];
+  }
+}
+
+/**
+ * Guarda la lista de FAQs. Sanea la entrada: descarta lo que no sea
+ * {q, a} con texto real, recorta el largo y limita la cantidad de ítems.
+ */
+async function saveFaq(env, items) {
+  if (!Array.isArray(items)) return null;
+
+  const limpio = items
+    .filter((it) => it && typeof it.q === "string" && typeof it.a === "string")
+    .map((it) => ({ q: it.q.trim().slice(0, 300), a: it.a.trim().slice(0, 2000) }))
+    .filter((it) => it.q && it.a)
+    .slice(0, MAX_FAQ_ITEMS);
+
+  await env.CONTENT_KV.put(FAQ_LIST_KEY, JSON.stringify(limpio));
+  return limpio;
+}
+
+/** Escapa texto para insertarlo de forma segura dentro del HTML. */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function jsonResponse(data, init = {}) {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -142,21 +180,15 @@ class ContentInjector {
  * discrepancia).
  */
 class FaqSchemaInjector {
-  constructor(content) {
-    this.content = content;
+  constructor(faq) {
+    this.faq = faq;
   }
   element(el) {
-    const mainEntity = [];
-    for (let i = 1; i <= 6; i++) {
-      const question = this.content[`faq.q${i}`];
-      const answer = this.content[`faq.a${i}`];
-      if (!question || !answer) continue;
-      mainEntity.push({
-        "@type": "Question",
-        name: question,
-        acceptedAnswer: { "@type": "Answer", text: answer },
-      });
-    }
+    const mainEntity = this.faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    }));
 
     const schema = {
       "@context": "https://schema.org",
@@ -169,6 +201,23 @@ class FaqSchemaInjector {
     // "</script>" para que un texto editado no pueda romper la etiqueta.
     const json = JSON.stringify(schema, null, 2).replace(/<\//g, "<\\/");
     el.setInnerContent(json, { html: true });
+  }
+}
+
+/** Dibuja la lista visible de preguntas frecuentes a partir de la lista guardada. */
+class FaqListInjector {
+  constructor(faq) {
+    this.faq = faq;
+  }
+  element(el) {
+    const html = this.faq
+      .map(
+        (item) =>
+          `<details class="faq-item"><summary>${escapeHtml(item.q)}</summary>` +
+          `<p>${escapeHtml(item.a)}</p></details>`
+      )
+      .join("");
+    el.setInnerContent(html, { html: true });
   }
 }
 
@@ -203,6 +252,32 @@ export default {
       return jsonResponse({ error: "Método no permitido" }, { status: 405 });
     }
 
+    // ---------- Preguntas frecuentes (lista dinámica) ----------
+    if (pathname === "/admin/api/faq") {
+      if (request.method === "GET") {
+        return jsonResponse(await getFaq(env));
+      }
+
+      if (request.method === "PUT") {
+        if (!request.headers.get("Cf-Access-Authenticated-User-Email")) {
+          return jsonResponse({ error: "No autorizado" }, { status: 403 });
+        }
+        let body;
+        try {
+          body = await request.json();
+        } catch {
+          return jsonResponse({ error: "JSON inválido" }, { status: 400 });
+        }
+        const saved = await saveFaq(env, body);
+        if (!saved) {
+          return jsonResponse({ error: "Se esperaba una lista de preguntas" }, { status: 400 });
+        }
+        return jsonResponse(saved);
+      }
+
+      return jsonResponse({ error: "Método no permitido" }, { status: 405 });
+    }
+
     // ---------- Estadísticas (protegida por Cloudflare Access en /admin*) ----------
     if (pathname === "/admin/api/analytics" && request.method === "GET") {
       const analytics = await getAnalytics(env);
@@ -223,10 +298,11 @@ export default {
     const contentType = response.headers.get("Content-Type") || "";
     if (!contentType.includes("text/html")) return response;
 
-    const content = await getContent(env);
+    const [content, faq] = await Promise.all([getContent(env), getFaq(env)]);
     return new HTMLRewriter()
       .on("[data-key]", new ContentInjector(content))
-      .on("script#faq-jsonld", new FaqSchemaInjector(content))
+      .on(".faq-list", new FaqListInjector(faq))
+      .on("script#faq-jsonld", new FaqSchemaInjector(faq))
       .transform(response);
   },
 };

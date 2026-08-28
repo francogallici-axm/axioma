@@ -302,7 +302,7 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
 .quienes { background: var(--green-dark); }
 .contacto { background: var(--green-deep); }
 
-.section-head { max-width: 680px; margin-bottom: 56px; }
+.section-head { margin-bottom: 56px; }
 .section-kicker {
   display: inline-block;
   text-transform: uppercase;
@@ -315,8 +315,15 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   line-height: 1.2;
   color: var(--white);
+  /* Sin límite de ancho: los títulos entran en una línea en desktop.
+     El texto largo sí se mantiene angosto (ver .section-intro). */
+  text-wrap: balance;
 }
-.section-intro { margin-top: 18px; color: rgba(255,255,255,0.78); }
+.section-intro {
+  margin-top: 18px;
+  max-width: 680px;           /* linea corta = mejor lectura */
+  color: rgba(255,255,255,0.78);
+}
 
 /* ---------- Quiénes somos ---------- */
 .quienes-body { max-width: 720px; margin-bottom: 64px; }

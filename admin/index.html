@@ -23,7 +23,7 @@
     .admin-user { font-size: 0.85rem; color: var(--cream); opacity: 0.8; }
     .admin-actions { display: flex; align-items: center; gap: 14px; }
     .admin-actions a { font-size: 0.9rem; color: var(--teal); }
-    .admin-main { max-width: 760px; margin: 0 auto; padding: 32px 24px 0; }
+    .admin-main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 0; }
     .admin-status {
       margin-bottom: 24px; padding: 12px 16px; border-radius: 4px;
       font-size: 0.92rem; display: none;
@@ -31,12 +31,35 @@
     .admin-status.show { display: block; }
     .admin-status.ok { background: rgba(126, 176, 177, 0.15); color: var(--teal); border: 1px solid rgba(126,176,177,0.4); }
     .admin-status.error { background: rgba(200, 90, 90, 0.15); color: #e6a2a2; border: 1px solid rgba(200,90,90,0.4); }
-    .admin-section { margin-bottom: 40px; }
+    .admin-section { margin-bottom: 28px; }
     .admin-section h2 {
       font-family: var(--font-sans); font-size: 0.8rem; text-transform: uppercase;
       letter-spacing: 2px; color: var(--teal); margin-bottom: 18px;
       padding-bottom: 10px; border-bottom: 1px solid rgba(232,220,200,0.12);
     }
+
+    /* Tarjetas del dashboard de edición */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .admin-card {
+      background: rgba(7, 37, 40, 0.55);
+      border: 1px solid rgba(232, 220, 200, 0.1);
+      border-radius: 6px;
+      padding: 22px 22px 6px;
+    }
+    .admin-card > h2 { margin-top: 0; }
+    /* Los campos cortos conviven de a dos dentro de una tarjeta */
+    .admin-card-fields {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0 20px;
+    }
+    .admin-field--wide { grid-column: 1 / -1; }
+
     .admin-field { margin-bottom: 18px; }
     .admin-field label { display: block; font-size: 0.85rem; color: var(--cream); margin-bottom: 6px; }
     .admin-field input[type="text"], .admin-field textarea {
@@ -103,6 +126,61 @@
       color: rgba(255, 255, 255, 0.65);
       margin-bottom: 28px;
     }
+
+    /* ---------- FAQs dinámicas ---------- */
+    .faq-editor-item {
+      background: var(--green-deep);
+      border: 1px solid rgba(232, 220, 200, 0.12);
+      border-radius: 5px;
+      padding: 18px 18px 4px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .faq-editor-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 12px;
+    }
+    .faq-editor-num {
+      font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--teal);
+    }
+    .faq-editor-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      background: none; border: 1px solid rgba(232, 220, 200, 0.2);
+      color: var(--cream); border-radius: 4px;
+      width: 30px; height: 28px; cursor: pointer; font-size: 0.9rem;
+      display: grid; place-items: center;
+      transition: border-color .2s ease, color .2s ease, background-color .2s ease;
+    }
+    .icon-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+    .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .icon-btn--danger:hover { border-color: #c96b6b; color: #e6a2a2; }
+    .btn-add {
+      background: none;
+      border: 1px dashed rgba(126, 176, 177, 0.5);
+      color: var(--teal);
+      border-radius: 5px;
+      padding: 13px 20px;
+      width: 100%;
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: background-color .2s ease, border-color .2s ease;
+    }
+    .btn-add:hover { background: rgba(126, 176, 177, 0.08); border-style: solid; }
+    .btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+    .faq-limit-note {
+      font-size: 0.8rem; color: rgba(255,255,255,0.5);
+      margin-top: 10px; text-align: center;
+    }
+
+    /* ---------- Dashboard en dos columnas ---------- */
+    @media (min-width: 900px) {
+      .admin-grid { grid-template-columns: 1fr 1fr; }
+      /* Las secciones con textos largos ocupan el ancho completo */
+      .admin-card--full { grid-column: 1 / -1; }
+      .admin-card--full .admin-card-fields { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -129,6 +207,13 @@
       </p>
       <div class="admin-loading" id="loading">Cargando contenido…</div>
       <form id="contentForm" hidden></form>
+
+      <div class="admin-card admin-card--full" id="faqCard" hidden>
+        <h2>Preguntas frecuentes</h2>
+        <div id="faqEditor"></div>
+        <button type="button" class="btn-add" id="faqAddBtn">+ Agregar pregunta</button>
+        <p class="faq-limit-note" id="faqCount"></p>
+      </div>
     </section>
 
     <!-- ---------- Página: Reportes ---------- -->
@@ -180,21 +265,9 @@
         { key: "calc.title", label: "Título", type: "text" },
         { key: "calc.intro", label: "Texto de introducción", type: "textarea" },
       ]},
-      { section: "Preguntas frecuentes", fields: [
+      { section: "Preguntas frecuentes · encabezado", fields: [
         { key: "faq.kicker", label: "Etiqueta de sección", type: "text" },
         { key: "faq.title", label: "Título", type: "text" },
-        { key: "faq.q1", label: "Pregunta 1", type: "text" },
-        { key: "faq.a1", label: "Respuesta 1", type: "textarea" },
-        { key: "faq.q2", label: "Pregunta 2", type: "text" },
-        { key: "faq.a2", label: "Respuesta 2", type: "textarea" },
-        { key: "faq.q3", label: "Pregunta 3", type: "text" },
-        { key: "faq.a3", label: "Respuesta 3", type: "textarea" },
-        { key: "faq.q4", label: "Pregunta 4", type: "text" },
-        { key: "faq.a4", label: "Respuesta 4", type: "textarea" },
-        { key: "faq.q5", label: "Pregunta 5", type: "text" },
-        { key: "faq.a5", label: "Respuesta 5", type: "textarea" },
-        { key: "faq.q6", label: "Pregunta 6", type: "text" },
-        { key: "faq.a6", label: "Respuesta 6", type: "textarea" },
       ]},
       { section: "Contacto", fields: [
         { key: "contacto.kicker", label: "Etiqueta de sección", type: "text" },
@@ -220,17 +293,27 @@
     }
 
     function buildForm(content) {
+      const grid = document.createElement("div");
+      grid.className = "admin-grid";
+
       SCHEMA.forEach(function (group) {
-        const section = document.createElement("div");
-        section.className = "admin-section";
+        const card = document.createElement("div");
+        card.className = "admin-card";
+        // Las secciones con muchos campos ocupan las dos columnas.
+        if (group.fields.length > 4) card.classList.add("admin-card--full");
 
         const h2 = document.createElement("h2");
         h2.textContent = group.section;
-        section.appendChild(h2);
+        card.appendChild(h2);
+
+        const fields = document.createElement("div");
+        fields.className = "admin-card-fields";
 
         group.fields.forEach(function (field) {
           const wrap = document.createElement("div");
           wrap.className = "admin-field";
+          // Los textos largos ocupan toda la fila para poder leerlos bien.
+          if (field.type === "textarea") wrap.classList.add("admin-field--wide");
 
           const label = document.createElement("label");
           label.setAttribute("for", field.key);
@@ -245,11 +328,14 @@
           input.value = content[field.key] || "";
           wrap.appendChild(input);
 
-          section.appendChild(wrap);
+          fields.appendChild(wrap);
         });
 
-        form.appendChild(section);
+        card.appendChild(fields);
+        grid.appendChild(card);
       });
+
+      form.appendChild(grid);
 
       loading.hidden = true;
       form.hidden = false;
@@ -275,6 +361,117 @@
       const res = await fetch("/admin/api/content");
       if (!res.ok) throw new Error("No se pudo cargar el contenido");
       return res.json();
+    }
+
+    /* ---------- Editor de preguntas frecuentes (lista dinámica) ---------- */
+    const MAX_FAQ = 20;
+    const faqEditor = document.getElementById("faqEditor");
+    const faqCard = document.getElementById("faqCard");
+    const faqAddBtn = document.getElementById("faqAddBtn");
+    const faqCount = document.getElementById("faqCount");
+    let faqItems = [];
+
+    function renderFaq() {
+      faqEditor.innerHTML = "";
+
+      faqItems.forEach(function (item, index) {
+        const box = document.createElement("div");
+        box.className = "faq-editor-item";
+
+        const head = document.createElement("div");
+        head.className = "faq-editor-head";
+
+        const num = document.createElement("span");
+        num.className = "faq-editor-num";
+        num.textContent = "Pregunta " + (index + 1);
+        head.appendChild(num);
+
+        const actions = document.createElement("div");
+        actions.className = "faq-editor-actions";
+
+        function boton(texto, titulo, alClickear, deshabilitado, esPeligro) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "icon-btn" + (esPeligro ? " icon-btn--danger" : "");
+          b.textContent = texto;
+          b.title = titulo;
+          b.setAttribute("aria-label", titulo);
+          b.disabled = !!deshabilitado;
+          b.addEventListener("click", alClickear);
+          return b;
+        }
+
+        actions.appendChild(boton("↑", "Subir", function () {
+          const tmp = faqItems[index - 1];
+          faqItems[index - 1] = faqItems[index];
+          faqItems[index] = tmp;
+          renderFaq();
+        }, index === 0));
+
+        actions.appendChild(boton("↓", "Bajar", function () {
+          const tmp = faqItems[index + 1];
+          faqItems[index + 1] = faqItems[index];
+          faqItems[index] = tmp;
+          renderFaq();
+        }, index === faqItems.length - 1));
+
+        actions.appendChild(boton("✕", "Eliminar esta pregunta", function () {
+          if (!confirm("¿Eliminar la pregunta " + (index + 1) + "?")) return;
+          faqItems.splice(index, 1);
+          renderFaq();
+        }, false, true));
+
+        head.appendChild(actions);
+        box.appendChild(head);
+
+        const wrapQ = document.createElement("div");
+        wrapQ.className = "admin-field";
+        const labelQ = document.createElement("label");
+        labelQ.textContent = "Pregunta";
+        const inputQ = document.createElement("input");
+        inputQ.type = "text";
+        inputQ.value = item.q;
+        inputQ.addEventListener("input", function () { faqItems[index].q = inputQ.value; });
+        wrapQ.appendChild(labelQ);
+        wrapQ.appendChild(inputQ);
+        box.appendChild(wrapQ);
+
+        const wrapA = document.createElement("div");
+        wrapA.className = "admin-field";
+        const labelA = document.createElement("label");
+        labelA.textContent = "Respuesta";
+        const inputA = document.createElement("textarea");
+        inputA.rows = 3;
+        inputA.value = item.a;
+        inputA.addEventListener("input", function () { faqItems[index].a = inputA.value; });
+        wrapA.appendChild(labelA);
+        wrapA.appendChild(inputA);
+        box.appendChild(wrapA);
+
+        faqEditor.appendChild(box);
+      });
+
+      faqAddBtn.disabled = faqItems.length >= MAX_FAQ;
+      faqCount.textContent =
+        faqItems.length + " de " + MAX_FAQ + " preguntas" +
+        (faqItems.length >= MAX_FAQ ? " · llegaste al máximo" : "");
+    }
+
+    faqAddBtn.addEventListener("click", function () {
+      if (faqItems.length >= MAX_FAQ) return;
+      faqItems.push({ q: "", a: "" });
+      renderFaq();
+      // Foco en la pregunta recién agregada
+      const inputs = faqEditor.querySelectorAll('.faq-editor-item input[type="text"]');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    });
+
+    async function loadFaq() {
+      const res = await fetch("/admin/api/faq");
+      if (!res.ok) throw new Error("No se pudieron cargar las preguntas");
+      faqItems = await res.json();
+      renderFaq();
+      faqCard.hidden = false;
     }
 
     async function loadAnalytics() {
@@ -331,13 +528,39 @@
             data[field.key] = document.getElementById(field.key).value;
           });
         });
-        const res = await fetch("/admin/api/content", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+        // Descartamos preguntas incompletas antes de guardar.
+        const faqLimpio = faqItems.filter(function (it) {
+          return it.q.trim() && it.a.trim();
         });
-        if (!res.ok) throw new Error("Error al guardar (" + res.status + ")");
-        showStatus("Cambios guardados. Ya están publicados en el sitio.", "ok");
+        const descartadas = faqItems.length - faqLimpio.length;
+
+        const [resContent, resFaq] = await Promise.all([
+          fetch("/admin/api/content", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          }),
+          fetch("/admin/api/faq", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(faqLimpio),
+          }),
+        ]);
+
+        if (!resContent.ok) throw new Error("Error al guardar los textos (" + resContent.status + ")");
+        if (!resFaq.ok) throw new Error("Error al guardar las preguntas (" + resFaq.status + ")");
+
+        // Reflejamos en pantalla lo que realmente quedó guardado.
+        faqItems = await resFaq.json();
+        renderFaq();
+
+        showStatus(
+          "Cambios guardados. Ya están publicados en el sitio." +
+            (descartadas > 0
+              ? " Se omitieron " + descartadas + " pregunta(s) sin completar."
+              : ""),
+          "ok"
+        );
       } catch (err) {
         showStatus("No se pudo guardar: " + err.message, "error");
       } finally {
@@ -372,6 +595,10 @@
 
     loadIdentity();
     loadAnalytics();
+    loadFaq().catch(function (err) {
+      faqEditor.textContent = "Error al cargar las preguntas: " + err.message;
+      faqCard.hidden = false;
+    });
     loadContent()
       .then(buildForm)
       .catch(function (err) {

@@ -9,6 +9,39 @@ const ANALYTICS_SITE_TAG = "7b7af660163146bebe42965e51f5e306";
 const ANALYTICS_WINDOW_DAYS = 30;
 
 /**
+ * Traduce el dominio de origen a un nombre reconocible. Varias plataformas
+ * usan más de un dominio (LinkedIn, por ejemplo, redirige por lnkd.in), así
+ * que se agrupan bajo una misma etiqueta.
+ */
+function nombreDeFuente(host) {
+  if (!host) return "Directo / desconocido";
+
+  const h = host.toLowerCase().replace(/^www\./, "");
+
+  const mapa = [
+    [/(^|\.)linkedin\.com$|^lnkd\.in$/, "LinkedIn"],
+    [/(^|\.)google\./, "Google"],
+    [/(^|\.)bing\.com$/, "Bing"],
+    [/(^|\.)duckduckgo\.com$/, "DuckDuckGo"],
+    [/(^|\.)instagram\.com$/, "Instagram"],
+    [/(^|\.)facebook\.com$|^l\.facebook\.com$|^fb\.me$/, "Facebook"],
+    [/(^|\.)whatsapp\.com$|^wa\.me$/, "WhatsApp"],
+    [/(^|\.)x\.com$|(^|\.)twitter\.com$|^t\.co$/, "X / Twitter"],
+    [/(^|\.)youtube\.com$|^youtu\.be$/, "YouTube"],
+    [/(^|\.)chatgpt\.com$|(^|\.)openai\.com$/, "ChatGPT"],
+    [/(^|\.)perplexity\.ai$/, "Perplexity"],
+    [/(^|\.)claude\.ai$/, "Claude"],
+    [/(^|\.)gemini\.google\.com$/, "Gemini"],
+    [/(^|\.)axiomaconsulting\.com\.ar$/, "Navegación interna"],
+  ];
+
+  for (const [patron, nombre] of mapa) {
+    if (patron.test(h)) return nombre;
+  }
+  return h;
+}
+
+/**
  * Trae un resumen de Cloudflare Web Analytics (visitas totales y páginas más
  * vistas de los últimos ANALYTICS_WINDOW_DAYS días) vía la GraphQL Analytics
  * API. Requiere los secrets CF_ANALYTICS_TOKEN y CF_ACCOUNT_ID configurados
@@ -38,6 +71,14 @@ async function getAnalytics(env) {
           ) {
             sum { visits }
             dimensions { requestPath }
+          }
+          sources: rumPageloadEventsAdaptiveGroups(
+            filter: { AND: [{ datetime_geq: $since, datetime_leq: $until }, { siteTag: $siteTag }, { bot: 0 }] }
+            limit: 10
+            orderBy: [sum_visits_DESC]
+          ) {
+            sum { visits }
+            dimensions { refererHost }
           }
         }
       }
@@ -69,6 +110,18 @@ async function getAnalytics(env) {
     const account = json.data?.viewer?.accounts?.[0];
     if (!account) return null;
 
+    // Varios dominios se agrupan bajo una misma fuente (ej. linkedin.com y
+    // lnkd.in), así que sumamos las visitas por nombre resultante.
+    const porFuente = new Map();
+    for (const row of account.sources || []) {
+      const nombre = nombreDeFuente(row.dimensions?.refererHost);
+      porFuente.set(nombre, (porFuente.get(nombre) || 0) + (row.sum?.visits ?? 0));
+    }
+    const sources = [...porFuente.entries()]
+      .map(([name, visits]) => ({ name, visits }))
+      .sort((a, b) => b.visits - a.visits)
+      .slice(0, 8);
+
     return {
       windowDays: ANALYTICS_WINDOW_DAYS,
       totalVisits: account.totals?.[0]?.sum?.visits ?? 0,
@@ -76,6 +129,7 @@ async function getAnalytics(env) {
         path: row.dimensions?.requestPath || "/",
         visits: row.sum?.visits ?? 0,
       })),
+      sources,
     };
   } catch {
     return null;

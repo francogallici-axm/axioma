@@ -137,6 +137,16 @@
     .stats-pages li span:first-child { color: var(--cream); }
     .stats-pages li span:last-child { color: var(--white); font-variant-numeric: tabular-nums; }
     .stats-empty { font-size: 0.9rem; color: var(--cream); opacity: 0.65; }
+    .stats-subtitle {
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cream);
+      opacity: 0.7;
+      margin: 26px 0 8px;
+    }
+    .stats-subtitle:first-of-type { margin-top: 6px; }
 
     /* ---------- Navegación por pestañas ---------- */
     .admin-nav {
@@ -566,17 +576,35 @@
         grid.appendChild(box);
         statsBody.appendChild(grid);
 
-        if (data.topPages && data.topPages.length) {
+        // Construye una lista "etiqueta … valor". Usa textContent en vez de
+        // innerHTML: los datos vienen de analytics (rutas y dominios que
+        // puede provocar cualquier visitante), así que no deben interpretarse
+        // como HTML.
+        function listaDeStats(titulo, filas, obtenerEtiqueta) {
+          if (!filas || !filas.length) return;
+
+          const h3 = document.createElement("h3");
+          h3.className = "stats-subtitle";
+          h3.textContent = titulo;
+          statsBody.appendChild(h3);
+
           const list = document.createElement("ul");
           list.className = "stats-pages";
-          data.topPages.forEach(function (page) {
+          filas.forEach(function (fila) {
             const li = document.createElement("li");
-            li.innerHTML =
-              "<span>" + page.path + "</span><span>" + page.visits + "</span>";
+            const etiqueta = document.createElement("span");
+            etiqueta.textContent = obtenerEtiqueta(fila);
+            const valor = document.createElement("span");
+            valor.textContent = fila.visits;
+            li.appendChild(etiqueta);
+            li.appendChild(valor);
             list.appendChild(li);
           });
           statsBody.appendChild(list);
         }
+
+        listaDeStats("De dónde llegan las visitas", data.sources, function (f) { return f.name; });
+        listaDeStats("Páginas más vistas", data.topPages, function (f) { return f.path; });
       } catch {
         statsBody.className = "stats-empty";
         statsBody.textContent = "No se pudieron cargar las estadísticas.";

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# El panel de administracion no debe indexarse
+Disallow: /admin
+
+Sitemap: https://www.axiomaconsulting.com.ar/sitemap.xml

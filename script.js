@@ -61,4 +61,50 @@
     revealEls.forEach(function (el) { el.classList.add("visible"); });
   }
 
+  /* ---------- 4. Calculadora de ahorro / ROI ---------- */
+  var calcForm = document.getElementById("calcForm");
+
+  if (calcForm) {
+    // Porcentaje del tiempo manual que se asume recuperable al automatizar.
+    var FACTOR_AUTOMATIZACION = 0.6;
+    var SEMANAS_POR_ANIO = 48; // descontando vacaciones y feriados
+
+    var inputPersonas = document.getElementById("calcPersonas");
+    var inputHoras = document.getElementById("calcHoras");
+    var inputCosto = document.getElementById("calcCosto");
+    var outHoras = document.getElementById("calcHorasAnuales");
+    var outAhorro = document.getElementById("calcAhorroAnual");
+
+    var formatoMoneda = new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      maximumFractionDigits: 0,
+    });
+    var formatoNumero = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+
+    function valorValido(input) {
+      var n = parseFloat(input.value);
+      return isFinite(n) && n > 0 ? n : 0;
+    }
+
+    function actualizarCalculo() {
+      var personas = valorValido(inputPersonas);
+      var horas = valorValido(inputHoras);
+      var costo = valorValido(inputCosto);
+
+      if (!personas || !horas || !costo) {
+        outHoras.textContent = "—";
+        outAhorro.textContent = "—";
+        return;
+      }
+
+      var horasAnuales = personas * horas * SEMANAS_POR_ANIO * FACTOR_AUTOMATIZACION;
+      outHoras.textContent = formatoNumero.format(horasAnuales);
+      outAhorro.textContent = formatoMoneda.format(horasAnuales * costo);
+    }
+
+    calcForm.addEventListener("input", actualizarCalculo);
+    calcForm.addEventListener("submit", function (e) { e.preventDefault(); });
+    actualizarCalculo();
+  }
 })();

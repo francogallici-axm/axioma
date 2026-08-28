@@ -124,6 +124,11 @@
         { key: "card3.title", label: "Tarjeta 3 · título", type: "text" },
         { key: "card3.desc", label: "Tarjeta 3 · descripción", type: "textarea" },
       ]},
+      { section: "Calculadora de ahorro", fields: [
+        { key: "calc.kicker", label: "Etiqueta de sección", type: "text" },
+        { key: "calc.title", label: "Título", type: "text" },
+        { key: "calc.intro", label: "Texto de introducción", type: "textarea" },
+      ]},
       { section: "Contacto", fields: [
         { key: "contacto.kicker", label: "Etiqueta de sección", type: "text" },
         { key: "contacto.title", label: "Título", type: "text" },
@@ -213,14 +218,6 @@
           statsBody.className = "stats-empty";
           statsBody.textContent =
             "Estadísticas no disponibles todavía (falta configurar el acceso a Cloudflare Analytics, o el sitio todavía no tiene visitas registradas).";
-          return;
-        }
-
-        // Diagnostico temporal: mientras depuramos, mostramos el detalle en
-        // vez del resumen si el backend devuelve informacion de debug.
-        if (data.debug) {
-          statsBody.className = "stats-empty";
-          statsBody.textContent = "[Diagnóstico] " + JSON.stringify(data);
           return;
         }
 

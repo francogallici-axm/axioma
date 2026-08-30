@@ -287,9 +287,13 @@
               <label for="calcCosto">Costo aproximado por hora (ARS)</label>
               <input type="number" id="calcCosto" min="1" step="100" value="8000" inputmode="numeric" required />
             </div>
+            <!-- Los dos números los escribe script.js desde sus constantes, para que
+                 el texto nunca pueda contradecir al cálculo. Los valores acá son el
+                 respaldo por si el JS no llega a ejecutarse. -->
             <p class="calc-note">
               Estimación orientativa: asume que la automatización elimina alrededor del
-              60&nbsp;% del tiempo dedicado a esas tareas repetitivas.
+              <span id="calcFactorPct">60</span>&nbsp;% del tiempo dedicado a esas tareas
+              repetitivas, sobre <span id="calcSemanas">48</span> semanas laborales al año.
             </p>
           </form>
 

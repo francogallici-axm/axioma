@@ -65,9 +65,17 @@
   var calcForm = document.getElementById("calcForm");
 
   if (calcForm) {
-    // Porcentaje del tiempo manual que se asume recuperable al automatizar.
-    var FACTOR_AUTOMATIZACION = 0.6;
-    var SEMANAS_POR_ANIO = 48; // descontando vacaciones y feriados
+    // Supuestos del cálculo. Ambos se muestran en pantalla (ver más abajo):
+    // si se cambian acá, el texto que lee el visitante se actualiza solo.
+    var FACTOR_AUTOMATIZACION = 0.6;  // parte del tiempo manual que se recupera
+    var SEMANAS_POR_ANIO = 48;        // descontando vacaciones y feriados
+
+    // Escribimos los supuestos en el texto para que no puedan desincronizarse
+    // del cálculo.
+    var notaFactor = document.getElementById("calcFactorPct");
+    var notaSemanas = document.getElementById("calcSemanas");
+    if (notaFactor) notaFactor.textContent = Math.round(FACTOR_AUTOMATIZACION * 100);
+    if (notaSemanas) notaSemanas.textContent = SEMANAS_POR_ANIO;
 
     var inputPersonas = document.getElementById("calcPersonas");
     var inputHoras = document.getElementById("calcHoras");

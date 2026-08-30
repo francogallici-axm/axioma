@@ -135,13 +135,19 @@
     var ahorroBox = document.getElementById("calcAhorroBox");
     var cta = document.getElementById("calcCta");
 
-    // Si ya dejó el email en una visita anterior, no se lo volvemos a pedir.
+    // El desbloqueo dura solo lo que dure la visita: usamos sessionStorage, que
+    // se borra al cerrar la pestaña. Asi, si la persona vuelve otro dia con una
+    // consulta nueva, la registramos de nuevo en vez de perderla.
     var YA_DESBLOQUEADO = "axioma.calc.desbloqueada";
     function estaDesbloqueada() {
-      try { return localStorage.getItem(YA_DESBLOQUEADO) === "1"; } catch (e) { return false; }
+      try { return sessionStorage.getItem(YA_DESBLOQUEADO) === "1"; } catch (e) { return false; }
     }
+    // Limpieza: la version anterior guardaba la marca en localStorage (para
+    // siempre). La borramos para no dejar datos huerfanos en el navegador.
+    try { localStorage.removeItem(YA_DESBLOQUEADO); } catch (e) { /* modo privado */ }
+
     function recordarDesbloqueo() {
-      try { localStorage.setItem(YA_DESBLOQUEADO, "1"); } catch (e) { /* modo privado */ }
+      try { sessionStorage.setItem(YA_DESBLOQUEADO, "1"); } catch (e) { /* modo privado */ }
     }
 
     function desbloquear() {

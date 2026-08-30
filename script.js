@@ -95,6 +95,12 @@
       return isFinite(n) && n > 0 ? n : 0;
     }
 
+    // Estado del "candado": hasta que no dejen el email, el monto en pesos ni
+    // siquiera se escribe en la página (difuminarlo por CSS se saltea mirando
+    // el código de la página).
+    var desbloqueada = true;
+    var ultimoCalculo = { horasAnuales: 0, ahorroAnual: 0 };
+
     function actualizarCalculo() {
       var personas = valorValido(inputPersonas);
       var horas = valorValido(inputHoras);
@@ -103,16 +109,102 @@
       if (!personas || !horas || !costo) {
         outHoras.textContent = "—";
         outAhorro.textContent = "—";
+        ultimoCalculo = { horasAnuales: 0, ahorroAnual: 0 };
         return;
       }
 
       var horasAnuales = personas * horas * SEMANAS_POR_ANIO * FACTOR_AUTOMATIZACION;
+      var ahorroAnual = horasAnuales * costo;
+      ultimoCalculo = { horasAnuales: horasAnuales, ahorroAnual: ahorroAnual };
+
       outHoras.textContent = formatoNumero.format(horasAnuales);
-      outAhorro.textContent = formatoMoneda.format(horasAnuales * costo);
+      outAhorro.textContent = desbloqueada
+        ? formatoMoneda.format(ahorroAnual)
+        : "$ ●.●●●.●●●";
     }
 
     calcForm.addEventListener("input", actualizarCalculo);
     calcForm.addEventListener("submit", function (e) { e.preventDefault(); });
+
+    /* ---- Revelado del ahorro en pesos a cambio del email ---- */
+    var gate = document.getElementById("calcGate");
+    var gateBtn = document.getElementById("calcGateBtn");
+    var gateError = document.getElementById("calcGateError");
+    var inputEmail = document.getElementById("calcEmail");
+    var inputWebsite = document.getElementById("calcWebsite");
+    var ahorroBox = document.getElementById("calcAhorroBox");
+    var cta = document.getElementById("calcCta");
+
+    // Si ya dejó el email en una visita anterior, no se lo volvemos a pedir.
+    var YA_DESBLOQUEADO = "axioma.calc.desbloqueada";
+    function estaDesbloqueada() {
+      try { return localStorage.getItem(YA_DESBLOQUEADO) === "1"; } catch (e) { return false; }
+    }
+    function recordarDesbloqueo() {
+      try { localStorage.setItem(YA_DESBLOQUEADO, "1"); } catch (e) { /* modo privado */ }
+    }
+
+    function desbloquear() {
+      desbloqueada = true;
+      if (gate) gate.hidden = true;
+      if (cta) cta.hidden = false;
+      if (ahorroBox) ahorroBox.classList.remove("calc-result--bloqueado");
+      actualizarCalculo();
+    }
+
+    if (gate) {
+      if (estaDesbloqueada()) {
+        desbloquear();
+      } else {
+        desbloqueada = false;
+        ahorroBox.classList.add("calc-result--bloqueado");
+      }
+
+      gate.addEventListener("submit", function (e) {
+        e.preventDefault();
+        gateError.hidden = true;
+
+        var email = (inputEmail.value || "").trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+          gateError.textContent = "Revisá el email, parece incompleto.";
+          gateError.hidden = false;
+          inputEmail.focus();
+          return;
+        }
+
+        gateBtn.disabled = true;
+        gateBtn.textContent = "Enviando…";
+
+        fetch("/api/lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            website: inputWebsite ? inputWebsite.value : "",
+            personas: valorValido(inputPersonas),
+            horas: valorValido(inputHoras),
+            costo: valorValido(inputCosto),
+            horasAnuales: ultimoCalculo.horasAnuales,
+            ahorroAnual: ultimoCalculo.ahorroAnual,
+          }),
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error("No se pudo enviar");
+            recordarDesbloqueo();
+            desbloquear();
+          })
+          .catch(function () {
+            gateError.textContent =
+              "No pudimos guardar tu email. Revisá tu conexión e intentá de nuevo.";
+            gateError.hidden = false;
+          })
+          .then(function () {
+            gateBtn.disabled = false;
+            gateBtn.textContent = "Ver el ahorro";
+          });
+      });
+    }
+
     actualizarCalculo();
   }
 })();

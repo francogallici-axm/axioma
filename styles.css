@@ -402,6 +402,74 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
   padding: 34px 30px;
   text-align: center;
 }
+
+/* ---------- Revelado del ahorro con el email ---------- */
+/* Mientras no dejen el email, el monto se muestra difuminado: se ve que hay
+   un resultado esperando, pero no se puede leer. */
+.calc-result--bloqueado .calc-result-value {
+  filter: blur(9px);
+  user-select: none;
+  opacity: 0.75;
+}
+.calc-gate { margin-bottom: 22px; }
+.calc-gate[hidden] { display: none; }
+.calc-gate-title {
+  font-size: 0.92rem;
+  color: var(--cream);
+  margin-bottom: 12px;
+}
+.calc-gate-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.calc-gate-row input[type="email"] {
+  flex: 1 1 210px;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--white);
+  background: var(--green-dark);
+  border: 1px solid rgba(232, 220, 200, 0.22);
+  border-radius: 3px;
+  padding: 13px 15px;
+}
+.calc-gate-row input[type="email"]:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(126, 176, 177, 0.15);
+}
+.calc-gate-row .btn { flex: 0 0 auto; padding: 13px 26px; }
+.calc-gate-row .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.calc-gate-legal {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+  margin-top: 12px;
+}
+.calc-gate-error {
+  font-size: 0.85rem;
+  color: #e6a2a2;
+  margin-top: 10px;
+}
+.calc-gate-error[hidden] { display: none; }
+/* Campo trampa para bots: fuera de la vista, sin usar display:none para que
+   los bots que lo detectan igual lo completen. */
+.calc-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.calc-cta[hidden] { display: none; }
+
+/* Texto solo para lectores de pantalla */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 .calc-result { margin-bottom: 26px; }
 .calc-result-value {
   display: block;

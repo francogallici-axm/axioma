@@ -10,3 +10,12 @@ CF_ANALYTICS_TOKEN=
 
 # Account ID de Cloudflare (Workers & Pages > panel derecho)
 CF_ACCOUNT_ID=
+
+# --- Aviso por mail de nuevas consultas de la calculadora (opcional) ---
+# Si faltan, las consultas igual se guardan; solo no se manda el aviso.
+# API key de Resend (https://resend.com) con permiso de envio
+RESEND_API_KEY=
+# A quien avisar (uno o varios separados por coma)
+LEAD_NOTIFY_TO=
+# Remitente verificado en Resend. Si se omite, usa el dominio de pruebas.
+LEAD_NOTIFY_FROM=

@@ -302,11 +302,34 @@
               <span class="calc-result-value" id="calcHorasAnuales">—</span>
               <span class="calc-result-label">horas recuperadas al año</span>
             </div>
-            <div class="calc-result calc-result--main">
+
+            <!-- El ahorro en pesos se revela al dejar el email. -->
+            <div class="calc-result calc-result--main" id="calcAhorroBox">
               <span class="calc-result-value" id="calcAhorroAnual">—</span>
               <span class="calc-result-label">de ahorro anual estimado</span>
             </div>
-            <a href="#contacto" class="btn btn-primary calc-cta">Quiero que lo analicemos</a>
+
+            <form class="calc-gate" id="calcGate">
+              <p class="calc-gate-title">Dejanos tu email y te mostramos el ahorro estimado en pesos.</p>
+              <div class="calc-gate-row">
+                <label class="visually-hidden" for="calcEmail">Tu email</label>
+                <input type="email" id="calcEmail" name="email" placeholder="tu@email.com"
+                       autocomplete="email" required />
+                <button type="submit" class="btn btn-primary" id="calcGateBtn">Ver el ahorro</button>
+              </div>
+              <!-- Trampa para bots: invisible para las personas. -->
+              <div class="calc-hp" aria-hidden="true">
+                <label for="calcWebsite">No completar</label>
+                <input type="text" id="calcWebsite" name="website" tabindex="-1" autocomplete="off" />
+              </div>
+              <p class="calc-gate-legal">
+                Usamos tu email solo para contactarte por esta consulta. No lo compartimos
+                con terceros y podés pedirnos que lo borremos cuando quieras.
+              </p>
+              <p class="calc-gate-error" id="calcGateError" role="alert" hidden></p>
+            </form>
+
+            <a href="#contacto" class="btn btn-primary calc-cta" id="calcCta" hidden>Quiero que lo analicemos</a>
           </div>
         </div>
       </div>

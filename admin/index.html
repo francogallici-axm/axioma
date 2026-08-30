@@ -148,6 +148,36 @@
     }
     .stats-subtitle:first-of-type { margin-top: 6px; }
 
+    /* ---------- Consultas de la calculadora ---------- */
+    .leads-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap;
+    }
+    .leads-head h2 { flex: 1 1 auto; }
+    .btn-export {
+      font-family: var(--font-sans); font-size: 0.85rem;
+      background: none; color: var(--teal);
+      border: 1px solid rgba(126, 176, 177, 0.45);
+      border-radius: 4px; padding: 8px 15px; cursor: pointer;
+      margin-bottom: 18px;
+      transition: background-color .2s ease;
+    }
+    .btn-export:hover { background: rgba(126, 176, 177, 0.12); }
+    .leads-table-wrap { overflow-x: auto; }
+    .leads-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; min-width: 640px; }
+    .leads-table th, .leads-table td {
+      text-align: left; padding: 9px 10px; white-space: nowrap;
+      border-bottom: 1px solid rgba(232, 220, 200, 0.08);
+    }
+    .leads-table th {
+      color: var(--cream); font-weight: 400; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .leads-table td { color: rgba(255, 255, 255, 0.82); }
+    .leads-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .leads-table a { color: var(--teal); }
+    .leads-count { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-top: 12px; }
+
     /* ---------- Gráfico de evolución ---------- */
     /* Paleta categórica validada con el script de la guía de dataviz
        (6 slots, todos los chequeos OK sobre la superficie #072528). */
@@ -304,6 +334,7 @@
   <nav class="admin-nav" role="tablist" aria-label="Secciones del panel">
     <button type="button" role="tab" id="tabContenido" aria-selected="true" aria-controls="pageContenido">Contenido</button>
     <button type="button" role="tab" id="tabReportes" aria-selected="false" aria-controls="pageReportes">Reportes</button>
+    <button type="button" role="tab" id="tabConsultas" aria-selected="false" aria-controls="pageConsultas">Consultas</button>
   </nav>
 
   <main class="admin-main">
@@ -351,6 +382,20 @@
       <div class="admin-card" id="sourcesCard">
         <h2>De dónde llegan las visitas</h2>
         <div id="sourcesBody" class="stats-empty">Cargando…</div>
+      </div>
+    </section>
+
+    <!-- ---------- Página: Consultas de la calculadora ---------- -->
+    <section class="admin-page" id="pageConsultas" role="tabpanel" aria-labelledby="tabConsultas" hidden>
+      <p class="admin-page-intro">
+        Personas que usaron la calculadora y dejaron su email para ver el ahorro estimado.
+      </p>
+      <div class="admin-card">
+        <div class="leads-head">
+          <h2>Consultas recibidas</h2>
+          <button type="button" class="btn-export" id="leadsExport" hidden>Descargar CSV</button>
+        </div>
+        <div id="leadsBody" class="stats-empty">Cargando consultas…</div>
       </div>
     </section>
   </main>
@@ -942,6 +987,112 @@
       });
     });
 
+    /* ---------- Consultas de la calculadora ---------- */
+    var leadsCargados = [];
+
+    function formatoFecha(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" }) +
+        " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+    }
+    const pesos = new Intl.NumberFormat("es-AR", {
+      style: "currency", currency: "ARS", maximumFractionDigits: 0,
+    });
+    const numero = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+
+    async function loadLeads() {
+      const cont = document.getElementById("leadsBody");
+      const btnExport = document.getElementById("leadsExport");
+      try {
+        const res = await fetch("/admin/api/leads");
+        if (!res.ok) throw new Error("estado " + res.status);
+        leadsCargados = await res.json();
+
+        if (!leadsCargados.length) {
+          cont.className = "stats-empty";
+          cont.textContent =
+            "Todavía nadie dejó su email en la calculadora. Las consultas van a aparecer acá apenas alguien la use.";
+          btnExport.hidden = true;
+          return;
+        }
+
+        cont.className = "";
+        cont.innerHTML = "";
+        btnExport.hidden = false;
+
+        const columnas = [
+          ["Fecha", (l) => formatoFecha(l.fecha), false],
+          ["Email", null, false],  // se arma aparte, es un enlace
+          ["Origen", (l) => l.origen || "—", false],
+          ["Personas", (l) => numero.format(l.personas), true],
+          ["Horas/sem", (l) => numero.format(l.horas), true],
+          ["Costo hora", (l) => pesos.format(l.costo), true],
+          ["Horas/año", (l) => numero.format(l.horasAnuales), true],
+          ["Ahorro estimado", (l) => pesos.format(l.ahorroAnual), true],
+        ];
+
+        const wrap = textoElemento("div", "leads-table-wrap");
+        const tabla = document.createElement("table");
+        tabla.className = "leads-table";
+
+        const thead = document.createElement("thead");
+        const trh = document.createElement("tr");
+        columnas.forEach(function (c) {
+          trh.appendChild(textoElemento("th", c[2] ? "num" : null, c[0]));
+        });
+        thead.appendChild(trh);
+        tabla.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        leadsCargados.forEach(function (l) {
+          const tr = document.createElement("tr");
+          columnas.forEach(function (c) {
+            if (c[0] === "Email") {
+              const td = document.createElement("td");
+              const a = document.createElement("a");
+              a.href = "mailto:" + l.email;
+              a.textContent = l.email;   // textContent: el email lo escribe un visitante
+              td.appendChild(a);
+              tr.appendChild(td);
+            } else {
+              tr.appendChild(textoElemento("td", c[2] ? "num" : null, c[1](l)));
+            }
+          });
+          tbody.appendChild(tr);
+        });
+        tabla.appendChild(tbody);
+        wrap.appendChild(tabla);
+        cont.appendChild(wrap);
+        cont.appendChild(textoElemento("p", "leads-count", leadsCargados.length + " consulta(s)"));
+      } catch (err) {
+        cont.className = "stats-empty";
+        cont.textContent = "No se pudieron cargar las consultas (" + err.message + ").";
+        btnExport.hidden = true;
+      }
+    }
+
+    document.getElementById("leadsExport").addEventListener("click", function () {
+      if (!leadsCargados.length) return;
+      const cab = ["Fecha", "Email", "Origen", "Personas", "HorasSemana", "CostoHora", "HorasAnio", "AhorroAnual", "Pais"];
+      // Prefijamos con comilla simple lo que empiece con = + - @ para que la
+      // planilla no lo interprete como formula.
+      function celda(v) {
+        let s = String(v === undefined || v === null ? "" : v);
+        if (/^[=+\-@]/.test(s)) s = "'" + s;
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      const filas = leadsCargados.map(function (l) {
+        return [l.fecha, l.email, l.origen, l.personas, l.horas, l.costo, l.horasAnuales, l.ahorroAnual, l.pais].map(celda).join(",");
+      });
+      const csv = "﻿" + cab.map(celda).join(",") + "\n" + filas.join("\n");
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "consultas-axioma-" + new Date().toISOString().slice(0, 10) + ".csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
     async function loadAnalytics() {
       const statsBody = document.getElementById("statsBody");
       const sourcesBody = document.getElementById("sourcesBody");
@@ -1050,6 +1201,7 @@
       var tabs = [
         { btn: document.getElementById("tabContenido"), page: document.getElementById("pageContenido") },
         { btn: document.getElementById("tabReportes"), page: document.getElementById("pageReportes") },
+        { btn: document.getElementById("tabConsultas"), page: document.getElementById("pageConsultas") },
       ];
 
       function activar(indice) {
@@ -1070,6 +1222,7 @@
 
     loadIdentity();
     loadAnalytics();
+    loadLeads();
     loadFaq().catch(function (err) {
       faqEditor.textContent = "Error al cargar las preguntas: " + err.message;
       faqCard.hidden = false;

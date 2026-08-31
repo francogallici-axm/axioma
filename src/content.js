@@ -13,8 +13,7 @@ export const CONTENT_SCHEMA = [
       { key: "hero.pillar2", label: "Pilar 2", type: "text" },
       { key: "hero.pillar3", label: "Pilar 3", type: "text" },
       { key: "hero.subtitle", label: "Subtítulo", type: "textarea" },
-      { key: "hero.lead1", label: "Bajada, párrafo 1", type: "textarea" },
-      { key: "hero.lead2", label: "Bajada, párrafo 2", type: "textarea" },
+      { key: "hero.lead1", label: "Bajada", type: "textarea" },
       { key: "hero.cta", label: "Texto del botón principal", type: "text" },
     ],
   },
@@ -26,6 +25,7 @@ export const CONTENT_SCHEMA = [
       { key: "quienes.p1", label: "Párrafo 1", type: "textarea" },
       { key: "quienes.highlight", label: "Frase destacada", type: "textarea" },
       { key: "quienes.p2", label: "Párrafo 2", type: "textarea" },
+      { key: "quienes.p3", label: "Párrafo 3", type: "textarea" },
       { key: "card1.title", label: "Tarjeta 1 · título", type: "text" },
       { key: "card1.desc", label: "Tarjeta 1 · descripción", type: "textarea" },
       { key: "card2.title", label: "Tarjeta 2 · título", type: "text" },
@@ -74,8 +74,6 @@ export const DEFAULT_CONTENT = {
   "hero.subtitle": "Ayudamos a PyMEs a mejorar sus procesos a través de la tecnología.",
   "hero.lead1":
     "Digitalizamos, automatizamos y optimizamos operaciones para reducir costos, mejorar tiempos y aumentar el control de la gestión.",
-  "hero.lead2":
-    "Trabajamos por objetivos y resultados concretos, con soluciones adaptadas a la realidad de cada empresa.",
   "hero.cta": "Conocé cómo trabajamos",
 
   "quienes.kicker": "Quiénes somos",
@@ -85,6 +83,8 @@ export const DEFAULT_CONTENT = {
   "quienes.highlight": "No vendemos teoría, aplicamos lo que ya probamos en empresas reales.",
   "quienes.p2":
     "Incorporamos inteligencia artificial como herramienta dentro de nuestra metodología: nos da velocidad de análisis y nos mantiene actualizados, sin perder el criterio profesional que solo da la experiencia.",
+  "quienes.p3":
+    "Trabajamos por objetivos y resultados concretos, con soluciones adaptadas a la realidad de cada empresa.",
   "card1.title": "Datos & Tecnología",
   "card1.desc": "Análisis de datos y soporte IT para tomar decisiones con información, no con intuición.",
   "card2.title": "Operaciones & Logística",

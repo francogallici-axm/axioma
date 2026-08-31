@@ -425,6 +425,26 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
 
+    // ---------- Direcciones amigables ----------
+    // Permiten compartir un link legible que lleva directo a la seccion de la
+    // calculadora. Se redirige en vez de servir la pagina en dos direcciones,
+    // para no generar contenido duplicado para los buscadores.
+    // Es 302 (temporal) a proposito: si algun dia la calculadora pasa a ser
+    // una pagina propia, un 301 quedaria cacheado en los navegadores y
+    // seria dificil de revertir.
+    const ATAJOS = {
+      "/cuanto-estas-perdiendo": "/#ROI",
+      "/calculadora": "/#ROI",   // nombre anterior de la seccion
+      "/roi": "/#ROI",
+    };
+    // Normalizamos: sin mayusculas y sin barra final.
+    let ruta = pathname.toLowerCase();
+    if (ruta.length > 1 && ruta.endsWith("/")) ruta = ruta.slice(0, -1);
+    const destino = ATAJOS[ruta];
+    if (destino) {
+      return Response.redirect(new URL(destino, url).toString(), 302);
+    }
+
     // ---------- API de contenido (protegida por Cloudflare Access en /admin*) ----------
     if (pathname === "/admin/api/content") {
       if (request.method === "GET") {

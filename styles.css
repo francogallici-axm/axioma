@@ -367,33 +367,19 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
 /* La calculadora es el momento de conversion de la pagina: se distingue con
    un filete superior y un resplandor teal detras de la tarjeta de resultados,
    sin salirse de la paleta ni romper la sobriedad del resto. */
+/* La calculadora es el momento de conversion de la pagina. Se distingue con
+   un marco sobrio en vez de efectos de luz: los degradados sutiles se
+   comportan distinto segun pantalla y densidad, y un borde no. */
 .calculadora {
-  position: relative;
   background: var(--green-deep);
-  overflow: hidden;
+  padding: 110px 24px;
 }
-.calculadora::before {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(126, 176, 177, 0.55), transparent);
+.calculadora .container {
+  padding: 48px 40px;
+  border: 1px solid rgba(126, 176, 177, 0.28);
+  border-radius: 8px;
+  background: rgba(126, 176, 177, 0.04);
 }
-/* Resplandor detras de la tarjeta. Va en el lado del resultado. */
-.calculadora::after {
-  content: "";
-  position: absolute;
-  right: 6%;
-  top: 55%;
-  width: min(70vw, 620px);
-  height: min(70vw, 620px);
-  transform: translateY(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(126, 176, 177, 0.16), transparent 68%);
-  pointer-events: none;
-}
-/* El contenido va por encima del resplandor. */
-.calculadora > .container { position: relative; z-index: 1; }
 .calc {
   display: grid;
   grid-template-columns: 1fr;
@@ -662,6 +648,8 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; }
 
 @media (max-width: 560px) {
   .section { padding: 80px 0; }
+  .calculadora { padding: 80px 16px; }
+  .calculadora .container { padding: 30px 20px; }
   .form-row { grid-template-columns: 1fr; gap: 0; }
   .footer-inner { flex-direction: column; align-items: flex-start; }
   .footer-meta { align-items: flex-start; }

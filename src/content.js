@@ -35,7 +35,7 @@ export const CONTENT_SCHEMA = [
     ],
   },
   {
-    section: "Calculadora de ahorro",
+    section: "¿Cuánto estás perdiendo?",
     fields: [
       { key: "calc.kicker", label: "Etiqueta de sección", type: "text" },
       { key: "calc.title", label: "Título", type: "text" },
@@ -92,7 +92,7 @@ export const DEFAULT_CONTENT = {
   "card3.title": "Aseguramiento de Calidad",
   "card3.desc": "Procesos confiables y repetibles: que crecer no signifique perder el control.",
 
-  "calc.kicker": "Calculadora",
+  "calc.kicker": "¿Cuánto estás perdiendo?",
   "calc.title": "¿Cuánto te cuestan las tareas manuales?",
   "calc.intro":
     "Estimá en 30 segundos cuánto tiempo y dinero podrías recuperar al año automatizando un proceso manual de tu empresa.",

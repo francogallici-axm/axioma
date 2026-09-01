@@ -19,10 +19,18 @@ En producción: **https://www.axiomaconsulting.com.ar**
 staging. Ramas:
 
 - `main` → producción
-- `desarrollo` → trabajo en curso; se mantiene sincronizada con `main`
+- `desarrollo` → trabajo en curso
 
-Flujo habitual: commit en `desarrollo` → merge fast-forward a `main` → push de
-ambas. Verificar siempre en producción después (`curl` a la home).
+Flujo: commit en `desarrollo` → push → **pull request hacia `main`** → merge.
+El merge es lo que publica. Verificar siempre en producción después (`curl` a
+la home).
+
+**No pushear directo a `main`**: el PR es la instancia de revisión.
+
+`gh` está instalado en `C:\Program Files\GitHub CLI\gh.exe`, pero puede no
+estar en el PATH de la terminal. Se autentica con un PAT en la variable de
+entorno `GH_TOKEN`; para abrir PRs ese token necesita permiso **Pull requests:
+Read and write**, además de Contents.
 
 ## Archivos
 

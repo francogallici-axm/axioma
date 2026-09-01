@@ -18,3 +18,13 @@ Thumbs.db
 !.dev.vars.example
 .env*
 !.env.example
+
+# Generado por el plugin de skills
+.agents/
+skills-lock.json
+
+# Maquetas de diseño (trabajo previo, no forma parte del sitio)
+.maqueta/
+
+# Notas sueltas de trabajo
+prompt-chrome-extension.txt

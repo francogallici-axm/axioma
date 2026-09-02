@@ -67,7 +67,7 @@
   if (calcForm) {
     // Supuestos del cálculo. Ambos se muestran en pantalla (ver más abajo):
     // si se cambian acá, el texto que lee el visitante se actualiza solo.
-    var FACTOR_AUTOMATIZACION = 0.6;  // parte del tiempo manual que se recupera
+    var FACTOR_AUTOMATIZACION = 0.45;  // parte del tiempo manual que se recupera
     var SEMANAS_POR_ANIO = 48;        // descontando vacaciones y feriados
 
     // Escribimos los supuestos en el texto para que no puedan desincronizarse

@@ -84,7 +84,7 @@ HTML visible como el JSON-LD de `FAQPage`, para que no puedan desincronizarse
 
 ## Calculadora de ahorro
 
-Dos supuestos, ambos declarados en pantalla: **60 %** de tiempo recuperado y
+Dos supuestos, ambos declarados en pantalla: **45 %** de tiempo recuperado y
 **48 semanas** laborales al año. Están como constantes en `script.js` y el texto
 visible **lo escribe el JS desde esas constantes** — no volver a escribirlos a
 mano en el HTML o pueden contradecirse.

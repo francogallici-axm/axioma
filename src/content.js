@@ -44,11 +44,9 @@ export const CONTENT_SCHEMA = [
       { key: "calc.labelPersonas", label: "Etiqueta · personas", type: "text" },
       { key: "calc.labelHoras", label: "Etiqueta · horas", type: "text" },
       { key: "calc.labelCosto", label: "Etiqueta · costo", type: "text" },
-      { key: "calc.supuestos", label: "Nota de supuestos", type: "textarea" },
       { key: "calc.labelHorasAnuales", label: "Etiqueta · horas al año", type: "text" },
       { key: "calc.labelAhorro", label: "Etiqueta · ahorro", type: "text" },
       { key: "calc.vacio", label: "Mensaje sin datos", type: "textarea" },
-      { key: "calc.nodosNota", label: "Nota de la red", type: "textarea" },
       { key: "calc.gateTitle", label: "Pedido del email", type: "textarea" },
       { key: "calc.gateLegal", label: "Aviso legal del email", type: "textarea" },
       { key: "calc.reveladoNota", label: "Nota tras revelar", type: "textarea" },
@@ -134,16 +132,12 @@ export const DEFAULT_CONTENT = {
     "Horas semanales por persona en tareas manuales",
   "calc.labelCosto":
     "Costo aproximado por hora",
-  "calc.supuestos":
-    "Estimación orientativa: asume que la automatización elimina alrededor del 45 % del tiempo dedicado a esas tareas repetitivas, sobre 48 semanas laborales al año.",
   "calc.labelHorasAnuales":
     "Horas recuperadas al año",
   "calc.labelAhorro":
     "De ahorro anual estimado",
   "calc.vacio":
     "Completá los tres campos y el estimado aparece solo. No hay botón de calcular.",
-  "calc.nodosNota":
-    "La red se dibuja con tus datos: un nodo por persona, y el tamaño de cada uno son las horas que hoy se van en tareas manuales.",
   "calc.gateTitle":
     "Dejanos tu email y te mostramos el monto. Te escribimos una sola vez, y solo si nos lo pedís.",
   "calc.gateLegal":

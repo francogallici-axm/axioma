@@ -385,12 +385,22 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
    CALCULADORA
    ============================================================ */
 .calculadora { background: var(--green-deep); border-top: 1px solid rgba(126, 176, 177, 0.18); }
-.calculadora .section-title { max-width: 22ch; font-size: clamp(1.75rem, 4.6vw, 2.75rem); line-height: 1.14; }
+.calculadora .section-title { max-width: 18ch; font-size: clamp(1.75rem, 4.6vw, 2.75rem); line-height: 1.14; }
 
-.calc-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: clamp(28px, 4vw, 48px); margin-top: clamp(36px, 5vw, 56px);
+/* El panel de resultado sube al nivel del título: la columna izquierda lleva
+   encabezado, intro y formulario; la derecha, el resultado, desde arriba. */
+.calc-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(28px, 4vw, 48px);
   align-items: start;
+}
+.calc-form { margin-top: clamp(32px, 4vw, 44px); }
+
+@media (min-width: 900px) {
+  .calc-layout { grid-template-columns: 1.05fr 0.95fr; }
+  /* El panel queda a la vista mientras se completan los campos. */
+  .calc-panel { position: sticky; top: calc(var(--nav-h) + 24px); }
 }
 .calc-form { display: flex; flex-direction: column; gap: 22px; }
 
@@ -414,7 +424,6 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
 .field-row select { flex: 0 0 auto; width: auto; font-size: 0.9375rem; font-weight: 500; color: var(--cream); padding: 14px 12px; cursor: pointer; }
 .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
 
-.calc-supuestos { font-size: 0.8125rem; color: rgba(255, 255, 255, 0.62); line-height: 1.55; }
 
 .calc-panel {
   border: 1px solid rgba(126, 176, 177, 0.45);
@@ -479,7 +488,6 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
 
 .calc-revelado { width: 100%; margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
 .calc-revelado-nota { font-size: 0.875rem; color: var(--cream); text-align: center; }
-.calc-net-nota { font-size: 0.8125rem; color: rgba(126, 176, 177, 0.85); margin-top: 22px; max-width: 62ch; }
 
 /* ============================================================
    PREGUNTAS FRECUENTES

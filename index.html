@@ -267,12 +267,11 @@
          CALCULADORA ROI — ¿Cuánto estás perdiendo?
          ============================================================ -->
     <section class="section calculadora" id="ROI">
-      <div class="container">
+      <div class="container calc-layout">
+        <div class="calc-col">
         <p class="eyebrow" data-key="calc.kicker">¿Cuánto estás perdiendo?</p>
         <h2 class="section-title" data-key="calc.title">El costo real de las tareas manuales</h2>
         <p class="section-intro" data-key="calc.intro">Estimá en 30 segundos cuánto tiempo y dinero podrías recuperar al año automatizando un proceso manual de tu empresa.</p>
-
-        <div class="calc-grid">
           <form class="calc-form" id="calcForm" novalidate>
             <div class="field">
               <label for="calcPersonas" data-key="calc.labelPersonas">Personas involucradas en el proceso</label>
@@ -293,12 +292,10 @@
                 </select>
               </div>
             </div>
-            <!-- El porcentaje y las semanas los escribe script.js desde sus constantes,
-                 para que el texto no pueda contradecir al cálculo. -->
-            <p class="calc-supuestos" data-key="calc.supuestos">Estimación orientativa: asume que la automatización elimina alrededor del <span id="calcFactorPct">45</span>&nbsp;% del tiempo dedicado a esas tareas repetitivas, sobre <span id="calcSemanas">48</span> semanas laborales al año.</p>
           </form>
+        </div>
 
-          <div class="calc-panel">
+        <div class="calc-panel">
             <div class="calc-live" aria-live="polite">
               <div class="calc-figure-wrap">
                 <span class="calc-figure" id="calcHorasAnuales">—</span>
@@ -344,9 +341,7 @@
             </div>
           </div>
         </div>
-
-        <p class="calc-net-nota" id="calcNetNota" data-key="calc.nodosNota">La red se dibuja con tus datos: un nodo por persona, y el tamaño de cada uno son las horas que hoy se van en tareas manuales.</p>
-      </div>
+    </div>
     </section>
 
     <!-- ============================================================

@@ -114,9 +114,8 @@
 </head>
 <body>
 
-  <!-- ============================================================
-       LOGO REUTILIZABLE (símbolo)  — se clona vía <use>
-       ============================================================ -->
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <!-- Logo oficial de Axioma: la "Á" serif construida con red de nodos y relojes.
@@ -131,70 +130,89 @@
   </svg>
 
   <!-- ============================================================
-       HEADER / NAVBAR
+       ENCABEZADO
        ============================================================ -->
-  <header class="navbar" id="navbar">
-    <div class="container nav-inner">
-      <a href="#inicio" class="brand" aria-label="Axioma Consulting — Inicio">
-        <svg class="brand-mark" aria-hidden="true"><use href="#axioma-mark" /></svg>
+  <header class="site-header" id="navbar">
+    <div class="header-inner">
+      <a class="brand" href="#inicio" aria-label="Axioma Consulting — Inicio">
+        <svg class="brand-mark" aria-hidden="true"><use href="#axioma-mark"></use></svg>
         <span class="brand-text">
           <span class="brand-name">AXIOMA</span>
           <span class="brand-sub">CONSULTING</span>
         </span>
       </a>
 
-      <nav class="nav-links" aria-label="Navegación principal">
-        <a href="#inicio">Inicio</a>
-        <a href="#quienes-somos">Quiénes somos</a>
-        <a href="#ROI">¿Cuánto estás perdiendo?</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contacto">Contacto</a>
-      </nav>
-
-      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="header-actions">
+        <nav class="nav-main" id="navMain" aria-label="Navegación principal" data-abierto="false">
+          <a href="#quienes-somos">Quiénes somos</a>
+          <a href="#ROI">Qué estás perdiendo</a>
+          <a href="#faq">Preguntas</a>
+        </nav>
+        <a class="btn btn-primary nav-cta" href="#contacto">Escribinos</a>
+        <button type="button" class="nav-toggle" id="navToggle" aria-label="Abrir menú"
+                aria-expanded="false" aria-controls="navMain">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main>
+  <main id="contenido">
+
     <!-- ============================================================
          HERO
          ============================================================ -->
-    <section class="hero" id="inicio">
-      <svg class="hero-bg-mark" aria-hidden="true"><use href="#axioma-mark" /></svg>
-      <div class="container hero-inner reveal">
-        <p class="hero-eyebrow" data-key="hero.eyebrow">Consultoría en Optimización de Procesos</p>
+    <section class="section hero" id="inicio">
+      <svg class="hero-net" viewBox="0 0 760 520" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+        <g stroke="#7eb0b1" stroke-width="1" fill="none" opacity="0.4">
+          <path d="M470 70 L580 170 L510 320 M580 170 L720 130 M510 320 L650 400 M470 70 L390 210 L510 320 M390 210 L300 110 M650 400 L720 130"></path>
+        </g>
+        <g fill="#0e3739" stroke="#7eb0b1" stroke-width="1.4">
+          <g class="net-node net-node--a" style="--d:.80s"><circle cx="470" cy="70" r="10"></circle></g>
+          <g class="net-node net-node--b" style="--d:.84s"><circle cx="580" cy="170" r="19"></circle><path d="M580 170 v-11 M580 170 h9" stroke="#7eb0b1" stroke-width="1.6" fill="none"></path></g>
+          <g class="net-node net-node--c" style="--d:.88s"><circle cx="720" cy="130" r="9"></circle></g>
+          <g class="net-node net-node--a" style="--d:.92s"><circle cx="510" cy="320" r="25"></circle><path d="M510 320 v-15 M510 320 h12" stroke="#7eb0b1" stroke-width="1.6" fill="none"></path></g>
+          <g class="net-node net-node--c" style="--d:.96s"><circle cx="650" cy="400" r="13"></circle></g>
+          <g class="net-node net-node--b" style="--d:1s"><circle cx="390" cy="210" r="15"></circle><path d="M390 210 v-9 M390 210 h7" stroke="#7eb0b1" stroke-width="1.6" fill="none"></path></g>
+          <g class="net-node net-node--a" style="--d:1.04s"><circle cx="300" cy="110" r="8"></circle></g>
+        </g>
+      </svg>
 
-        <!-- Pilares: tres palabras grandes que se iluminan y se "checkean"
-             en secuencia (Tiempos -> Costos -> Calidad), en loop. -->
-        <h1 class="pillars" aria-label="Tiempos, Costos, Calidad">
-          <span class="pillar pillar--1">
+      <div class="container hero-inner">
+        <p class="eyebrow anim-up" data-key="hero.eyebrow">Consultoría en Optimización de Procesos</p>
+
+        <h1 class="pillars">
+          <span class="pillars-line" aria-hidden="true"></span>
+          <span class="pillar">
             <span class="pillar-box" aria-hidden="true">
-              <svg class="pillar-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
+              <span class="pillar-fill" style="--d:.38s"></span>
+              <svg class="pillar-check" viewBox="0 0 24 24" style="--d:.54s"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
             </span>
-            <span class="pillar-text" data-key="hero.pillar1">Tiempos</span>
+            <span class="pillar-text anim-up" data-key="hero.pillar1">Tiempos</span>
           </span>
-          <span class="pillar pillar--2">
+          <span class="pillar">
             <span class="pillar-box" aria-hidden="true">
-              <svg class="pillar-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
+              <span class="pillar-fill" style="--d:.5s"></span>
+              <svg class="pillar-check" viewBox="0 0 24 24" style="--d:.66s"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
             </span>
-            <span class="pillar-text" data-key="hero.pillar2">Costos</span>
+            <span class="pillar-text anim-up" style="--d:.09s" data-key="hero.pillar2">Costos</span>
           </span>
-          <span class="pillar pillar--3">
+          <span class="pillar">
             <span class="pillar-box" aria-hidden="true">
-              <svg class="pillar-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
+              <span class="pillar-fill" style="--d:.62s"></span>
+              <svg class="pillar-check" viewBox="0 0 24 24" style="--d:.78s"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
             </span>
-            <span class="pillar-text" data-key="hero.pillar3">Calidad</span>
+            <span class="pillar-text anim-up" style="--d:.18s" data-key="hero.pillar3">Calidad</span>
           </span>
         </h1>
 
-        <p class="hero-subtitle" data-key="hero.subtitle">Ayudamos a PyMEs a mejorar sus procesos a través de la tecnología.</p>
-        <p class="hero-lead" data-key="hero.lead1">
-          Digitalizamos, automatizamos y optimizamos operaciones para reducir costos,
-          mejorar tiempos y aumentar el control de la gestión.
-        </p>
-        <a href="#quienes-somos" class="btn btn-primary" data-key="hero.cta">Conocé cómo trabajamos</a>
+        <p class="hero-subtitle anim-up" style="--d:.26s" data-key="hero.subtitle">Ayudamos a PyMEs a mejorar sus procesos a través de la tecnología.</p>
+        <p class="hero-lead anim-up" style="--d:.32s" data-key="hero.lead1">Analizamos y optimizamos operaciones para reducir costos, mejorar tiempos y ganar control sobre la gestión, apoyándonos en la tecnología que mejor se adapte a cada caso.</p>
+
+        <div class="hero-actions anim-up" style="--d:.38s">
+          <a class="btn btn-primary btn-lg" href="#ROI" data-key="hero.cta">Estimá cuánto estás perdiendo</a>
+          <span class="hero-cta-nota" data-key="hero.ctaNota">30 segundos, tres números</span>
+        </div>
       </div>
     </section>
 
@@ -203,57 +221,36 @@
          ============================================================ -->
     <section class="section quienes" id="quienes-somos">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="section-kicker" data-key="quienes.kicker">Quiénes somos</span>
-          <h2 class="section-title" data-key="quienes.title">Tres miradas distintas, soluciones integrales</h2>
+        <p class="eyebrow" data-key="quienes.kicker">Quiénes somos</p>
+        <h2 class="section-title" data-key="quienes.title">Tres miradas distintas, soluciones integrales</h2>
+
+        <div class="quienes-body">
+          <p data-key="quienes.p1">Somos un equipo de profesionales con experiencia real en análisis de datos, soporte IT, ventas, logística y aseguramiento de calidad. Cada proyecto se mira desde múltiples ángulos para encontrar mejoras que de verdad muevan la aguja.</p>
+          <p class="highlight" data-key="quienes.highlight">No vendemos teoría, aplicamos lo que ya probamos en empresas reales.</p>
+          <p data-key="quienes.p2">Incorporamos inteligencia artificial como herramienta dentro de nuestra metodología: nos da velocidad de análisis y nos mantiene actualizados, sin perder el criterio profesional que solo da la experiencia.</p>
+          <p data-key="quienes.p3">Trabajamos por objetivos y resultados concretos, con soluciones adaptadas a la realidad de cada empresa.</p>
         </div>
 
-        <div class="quienes-body reveal">
-          <p data-key="quienes.p1">
-            Somos un equipo de profesionales con experiencia real en análisis de datos,
-            soporte IT, ventas, logística y aseguramiento de calidad. Cada proyecto se
-            mira desde múltiples ángulos para encontrar mejoras que de verdad muevan la aguja.
-          </p>
-          <p class="highlight" data-key="quienes.highlight">
-            No vendemos teoría, aplicamos lo que ya probamos en empresas reales.
-          </p>
-          <p data-key="quienes.p2">
-            Incorporamos inteligencia artificial como herramienta dentro de nuestra
-            metodología: nos da velocidad de análisis y nos mantiene actualizados, sin
-            perder el criterio profesional que solo da la experiencia.
-          </p>
-          <p data-key="quienes.p3">
-            Trabajamos por objetivos y resultados concretos, con soluciones adaptadas a la realidad de cada empresa.
-          </p>
-        </div>
-
-        <div class="cards">
-          <article class="card reveal">
-            <div class="card-icon" aria-hidden="true">
-              <!-- datos -->
-              <svg viewBox="0 0 32 32" fill="none"><path d="M4 26V14M12 26V6M20 26V18M28 26V10" stroke="#7eb0b1" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <div class="cards-wrap">
+          <div class="cards-rule" aria-hidden="true">
+            <span class="rule-node"></span><span class="rule-line"></span>
+            <span class="rule-node"></span><span class="rule-line"></span>
+            <span class="rule-node"></span>
+          </div>
+          <div class="cards">
+            <div class="card">
+              <h3 data-key="card1.title">Datos &amp; Tecnología</h3>
+              <p data-key="card1.desc">Análisis de datos y soporte IT para tomar decisiones con información, no con intuición.</p>
             </div>
-            <h3 data-key="card1.title">Datos &amp; Tecnología</h3>
-            <p data-key="card1.desc">Análisis de datos y soporte IT para tomar decisiones con información, no con intuición.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card-icon" aria-hidden="true">
-              <!-- operaciones -->
-              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="6" stroke="#7eb0b1" stroke-width="2.2"/><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M26 6l-3 3M9 23l-3 3" stroke="#7eb0b1" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <div class="card">
+              <h3 data-key="card2.title">Operaciones &amp; Logística</h3>
+              <p data-key="card2.desc">Ventas, logística y procesos operativos optimizados para escalar sin fricción.</p>
             </div>
-            <h3 data-key="card2.title">Operaciones &amp; Logística</h3>
-            <p data-key="card2.desc">Ventas, logística y procesos operativos optimizados para escalar sin fricción.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card-icon" aria-hidden="true">
-              <!-- calidad -->
-              <svg viewBox="0 0 32 32" fill="none"><path d="M16 3l3.5 7.5L27 11l-5.5 5.3L23 24l-7-3.8L9 24l1.5-7.7L5 11l7.5-.5L16 3z" stroke="#7eb0b1" stroke-width="2.2" stroke-linejoin="round"/></svg>
+            <div class="card">
+              <h3 data-key="card3.title">Aseguramiento de Calidad</h3>
+              <p data-key="card3.desc">Procesos confiables y repetibles: que crecer no signifique perder el control.</p>
             </div>
-            <h3 data-key="card3.title">Aseguramiento de Calidad</h3>
-            <p data-key="card3.desc">Procesos confiables y repetibles: que crecer no signifique perder el control.</p>
-          </article>
+          </div>
         </div>
       </div>
     </section>
@@ -263,141 +260,99 @@
          ============================================================ -->
     <section class="section calculadora" id="ROI">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="section-kicker" data-key="calc.kicker">Calculadora</span>
-          <h2 class="section-title" data-key="calc.title">¿Cuánto te cuestan las tareas manuales?</h2>
-          <p class="section-intro" data-key="calc.intro">
-            Estimá en 30 segundos cuánto tiempo y dinero podrías recuperar al año
-            automatizando un proceso manual de tu empresa.
-          </p>
-        </div>
+        <p class="eyebrow" data-key="calc.kicker">¿Cuánto estás perdiendo?</p>
+        <h2 class="section-title" data-key="calc.title">El costo real de las tareas manuales</h2>
+        <p class="section-intro" data-key="calc.intro">Estimá en 30 segundos cuánto tiempo y dinero podrías recuperar al año automatizando un proceso manual de tu empresa.</p>
 
-        <div class="calc reveal">
+        <div class="calc-grid">
           <form class="calc-form" id="calcForm" novalidate>
             <div class="field">
-              <label for="calcPersonas">Personas involucradas en el proceso</label>
-              <input type="number" id="calcPersonas" min="1" step="1" value="3" inputmode="numeric" required />
+              <label for="calcPersonas" data-key="calc.labelPersonas">Personas involucradas en el proceso</label>
+              <input type="number" id="calcPersonas" min="1" step="1" value="3" inputmode="numeric" />
             </div>
             <div class="field">
-              <label for="calcHoras">Horas semanales por persona en tareas manuales</label>
-              <input type="number" id="calcHoras" min="1" step="1" value="8" inputmode="numeric" required />
+              <label for="calcHoras" data-key="calc.labelHoras">Horas semanales por persona en tareas manuales</label>
+              <input type="number" id="calcHoras" min="1" step="1" value="8" inputmode="numeric" />
             </div>
             <div class="field">
-              <label for="calcCosto">Costo aproximado por hora (ARS)</label>
-              <input type="number" id="calcCosto" min="1" step="100" value="8000" inputmode="numeric" required />
+              <label for="calcCosto" data-key="calc.labelCosto">Costo aproximado por hora</label>
+              <div class="field-row">
+                <input type="number" id="calcCosto" min="1" step="100" value="8000" inputmode="numeric" />
+                <select id="calcMoneda" aria-label="Moneda">
+                  <option value="ARS">ARS</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </div>
             </div>
-            <!-- Los dos números los escribe script.js desde sus constantes, para que
-                 el texto nunca pueda contradecir al cálculo. Los valores acá son el
-                 respaldo por si el JS no llega a ejecutarse. -->
-            <p class="calc-note">
-              Estimación orientativa: asume que la automatización elimina alrededor del
-              <span id="calcFactorPct">45</span>&nbsp;% del tiempo dedicado a esas tareas
-              repetitivas, sobre <span id="calcSemanas">48</span> semanas laborales al año.
-            </p>
+            <!-- El porcentaje y las semanas los escribe script.js desde sus constantes,
+                 para que el texto no pueda contradecir al cálculo. -->
+            <p class="calc-supuestos" data-key="calc.supuestos">Estimación orientativa: asume que la automatización elimina alrededor del <span id="calcFactorPct">45</span>&nbsp;% del tiempo dedicado a esas tareas repetitivas, sobre <span id="calcSemanas">48</span> semanas laborales al año.</p>
           </form>
 
-          <div class="calc-results" id="calcResults" aria-live="polite">
-            <div class="calc-result">
-              <span class="calc-result-value" id="calcHorasAnuales">—</span>
-              <span class="calc-result-label">horas recuperadas al año</span>
-            </div>
-
-            <!-- El ahorro en pesos se revela al dejar el email. -->
-            <div class="calc-result calc-result--main" id="calcAhorroBox">
-              <span class="calc-result-value" id="calcAhorroAnual">—</span>
-              <span class="calc-result-label">de ahorro anual estimado</span>
-            </div>
-
-            <form class="calc-gate" id="calcGate">
-              <p class="calc-gate-title">Dejanos tu email y te mostramos el ahorro estimado en pesos.</p>
-              <div class="calc-gate-row">
-                <label class="visually-hidden" for="calcEmail">Tu email</label>
-                <input type="email" id="calcEmail" name="email" placeholder="tu@email.com"
-                       autocomplete="email" required />
-                <button type="submit" class="btn btn-primary" id="calcGateBtn">Ver el ahorro</button>
+          <div class="calc-panel">
+            <div class="calc-live" aria-live="polite">
+              <div class="calc-figure-wrap">
+                <span class="calc-figure" id="calcHorasAnuales">—</span>
+                <span class="calc-figure-label" data-key="calc.labelHorasAnuales">Horas recuperadas al año</span>
               </div>
-              <!-- Trampa para bots: invisible para las personas. -->
-              <div class="calc-hp" aria-hidden="true">
-                <label for="calcWebsite">No completar</label>
-                <input type="text" id="calcWebsite" name="website" tabindex="-1" autocomplete="off" />
-              </div>
-              <p class="calc-gate-legal">
-                Usamos tu email solo para contactarte por esta consulta. No lo compartimos
-                con terceros y podés pedirnos que lo borremos cuando quieras.
-              </p>
-              <p class="calc-gate-error" id="calcGateError" role="alert" hidden></p>
-            </form>
 
-            <a href="#contacto" class="btn btn-primary calc-cta" id="calcCta" hidden>Quiero que lo analicemos</a>
+              <div class="calc-net-wrap">
+                <svg class="calc-net" id="calcNet" viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+              </div>
+
+              <p class="calc-vacio" id="calcVacio" data-key="calc.vacio">Completá los tres campos y el estimado aparece solo. No hay botón de calcular.</p>
+
+              <div class="calc-resultado" id="calcResultado" hidden>
+                <div class="calc-monto-box">
+                  <span class="calc-monto" id="calcAhorroAnual">$ ●.●●●.●●●</span>
+                  <span class="calc-figure-label" data-key="calc.labelAhorro">De ahorro anual estimado</span>
+                </div>
+
+                <form class="calc-gate" id="calcGate" novalidate>
+                  <p class="gate-title" data-key="calc.gateTitle">Dejanos tu email y te mostramos el monto. Te escribimos una sola vez, y solo si nos lo pedís.</p>
+                  <div class="gate-row">
+                    <label class="visually-hidden" for="calcEmail">Tu email</label>
+                    <input type="email" id="calcEmail" placeholder="tu@email.com" autocomplete="email" />
+                    <button type="submit" class="btn btn-primary" id="calcGateBtn">
+                      <span class="spinner" hidden></span>
+                      <span class="btn-texto">Ver el ahorro</span>
+                    </button>
+                  </div>
+                  <!-- Trampa para bots: invisible para las personas. -->
+                  <div class="hp" aria-hidden="true">
+                    <label for="calcWebsite">No completar</label>
+                    <input type="text" id="calcWebsite" tabindex="-1" autocomplete="off" />
+                  </div>
+                  <p class="gate-error" id="calcGateError" role="alert" hidden></p>
+                  <p class="gate-legal" data-key="calc.gateLegal">Usamos tu email solo para contactarte por esta consulta. No lo compartimos con terceros y podés pedirnos que lo borremos cuando quieras.</p>
+                </form>
+
+                <div class="calc-revelado" id="calcRevelado" hidden>
+                  <p class="calc-revelado-nota" data-key="calc.reveladoNota">Ese número es el techo de lo que se puede recuperar en un año. Cuánto de eso es alcanzable depende del proceso.</p>
+                  <a class="btn btn-primary btn-block" href="#contacto" data-key="calc.cta">Quiero que lo analicemos</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <p class="calc-net-nota" id="calcNetNota" data-key="calc.nodosNota">La red se dibuja con tus datos: un nodo por persona, y el tamaño de cada uno son las horas que hoy se van en tareas manuales.</p>
       </div>
     </section>
 
     <!-- ============================================================
          PREGUNTAS FRECUENTES
+         El Worker reemplaza esta lista con la guardada en KV.
          ============================================================ -->
     <section class="section faq" id="faq">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="section-kicker" data-key="faq.kicker">Preguntas frecuentes</span>
-          <h2 class="section-title" data-key="faq.title">Lo que más nos consultan</h2>
-        </div>
-
-        <div class="faq-list reveal">
+        <p class="eyebrow" data-key="faq.kicker">Preguntas frecuentes</p>
+        <h2 class="section-title" data-key="faq.title">Lo que más nos consultan</h2>
+        <div class="faq-list">
           <details class="faq-item">
-            <summary data-key="faq.q1">¿Qué hace exactamente una consultora de optimización de procesos?</summary>
-            <p data-key="faq.a1">
-              Analizamos cómo trabaja hoy tu empresa, detectamos dónde se pierde tiempo,
-              dinero o calidad, y rediseñamos esos procesos apoyándonos en tecnología:
-              digitalización, automatización y mejor uso de los datos. El objetivo es que
-              produzcas lo mismo o más, con menos esfuerzo y más control.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-key="faq.q2">¿Trabajan con PyMEs o solo con empresas grandes?</summary>
-            <p data-key="faq.a2">
-              Trabajamos específicamente con PyMEs, tanto tecnológicas como operacionales.
-              Adaptamos el alcance a la realidad de cada empresa: no aplicamos recetas de
-              corporación a estructuras chicas.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-key="faq.q3">¿Cómo cobran: por hora o por proyecto?</summary>
-            <p data-key="faq.a3">
-              Trabajamos por objetivos y resultados concretos, no por horas. Definimos
-              juntos qué se busca lograr, en qué plazo y con qué alcance, y sobre eso
-              armamos la propuesta.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-key="faq.q4">¿Cuánto tarda en verse un resultado?</summary>
-            <p data-key="faq.a4">
-              Depende del proceso, pero trabajamos por fases justamente para que haya
-              mejoras visibles temprano. Las primeras optimizaciones suelen notarse en las
-              primeras semanas, sin esperar a que termine todo el proyecto.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-key="faq.q5">¿Necesito tener sistemas o software para que puedan ayudarme?</summary>
-            <p data-key="faq.a5">
-              No. Muchos de los procesos que optimizamos arrancan en planillas, papel o
-              WhatsApp. Parte del trabajo es justamente definir qué conviene digitalizar,
-              con qué herramientas y en qué orden.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-key="faq.q6">¿Usan inteligencia artificial en sus proyectos?</summary>
-            <p data-key="faq.a6">
-              Sí, como herramienta dentro de nuestra metodología: nos da velocidad de
-              análisis y nos mantiene actualizados. Pero el criterio profesional y la
-              decisión final siempre son humanos, apoyados en experiencia real en empresas.
-            </p>
+            <summary><span>¿Qué hace exactamente una consultora de optimización de procesos?</span><span class="faq-icon" aria-hidden="true"></span></summary>
+            <div><p>Analizamos cómo trabaja hoy tu empresa, detectamos dónde se pierde tiempo, dinero o calidad, y rediseñamos esos procesos apoyándonos en tecnología.</p></div>
           </details>
         </div>
       </div>
@@ -408,69 +363,79 @@
          ============================================================ -->
     <section class="section contacto" id="contacto">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="section-kicker" data-key="contacto.kicker">Contacto</span>
-          <h2 class="section-title" data-key="contacto.title">¿Hablamos?</h2>
-          <p class="section-intro" data-key="contacto.intro">
-            Escribinos para una consulta inicial sin compromiso. Conversamos sobre tu
-            proceso y te decimos con franqueza si podemos ayudarte.
-          </p>
-        </div>
+        <p class="eyebrow" data-key="contacto.kicker">Contacto</p>
+        <h2 class="section-title" data-key="contacto.title">¿Hablamos?</h2>
+        <p class="section-intro" data-key="contacto.intro">Escribinos para una consulta inicial sin compromiso. Conversamos sobre tu proceso y te decimos con franqueza si podemos ayudarte.</p>
 
-        <form class="form reveal" action="mailto:contacto@axiomaconsulting.com.ar" method="post" enctype="text/plain">
-          <div class="form-row">
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="field-grid">
             <div class="field">
-              <label for="nombre">Nombre</label>
-              <input type="text" id="nombre" name="Nombre" required autocomplete="name" />
+              <label for="nombre" data-key="contacto.labelNombre">Nombre</label>
+              <input type="text" id="nombre" autocomplete="name" required />
             </div>
             <div class="field">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="Email" required autocomplete="email" />
+              <label for="email" data-key="contacto.labelEmail">Email</label>
+              <input type="email" id="email" autocomplete="email" required />
             </div>
           </div>
           <div class="field">
-            <label for="empresa">Empresa</label>
-            <input type="text" id="empresa" name="Empresa" autocomplete="organization" />
+            <label for="empresa" data-key="contacto.labelEmpresa">Empresa</label>
+            <input type="text" id="empresa" autocomplete="organization" />
           </div>
           <div class="field">
-            <label for="mensaje">Mensaje</label>
-            <textarea id="mensaje" name="Mensaje" rows="5" required></textarea>
+            <label for="mensaje" data-key="contacto.labelMensaje">Contanos qué proceso te está costando tiempo</label>
+            <textarea id="mensaje" rows="5"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary" data-key="contacto.formSubmit">Enviar</button>
+          <div class="hp" aria-hidden="true">
+            <label for="contactoWebsite">No completar</label>
+            <input type="text" id="contactoWebsite" tabindex="-1" autocomplete="off" />
+          </div>
+          <p class="form-error" id="contactError" role="alert" hidden></p>
+          <div class="contact-actions">
+            <button type="submit" class="btn btn-primary" id="contactBtn">
+              <span class="spinner" hidden></span>
+              <span class="btn-texto" data-key="contacto.formSubmit">Enviar</span>
+            </button>
+            <p class="contact-directo" data-key="contacto.directo">O directamente a <a href="mailto:contacto@axiomaconsulting.com.ar">contacto@axiomaconsulting.com.ar</a></p>
+          </div>
         </form>
 
-        <p class="contact-direct reveal">
-          O escribinos directamente a
-          <a href="mailto:contacto@axiomaconsulting.com.ar">contacto@axiomaconsulting.com.ar</a>
-        </p>
+        <div class="contact-ok" id="contactOk" hidden>
+          <div class="contact-ok-head">
+            <span class="contact-ok-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+            </span>
+            <h3 data-key="contacto.okTitulo">Recibimos tu mensaje</h3>
+          </div>
+          <p data-key="contacto.okTexto">Te respondemos dentro de las próximas 48 horas hábiles, desde contacto@axiomaconsulting.com.ar. Si es urgente, escribinos directamente a ese mismo correo.</p>
+        </div>
       </div>
     </section>
   </main>
 
   <!-- ============================================================
-       FOOTER
+       PIE
        ============================================================ -->
-  <footer class="footer">
+  <footer class="site-footer">
     <div class="container footer-inner">
-      <a href="#inicio" class="brand brand--footer" aria-label="Axioma Consulting — Inicio">
-        <svg class="brand-mark" aria-hidden="true"><use href="#axioma-mark" /></svg>
+      <a class="brand" href="#inicio" aria-label="Axioma Consulting — Inicio">
+        <svg class="brand-mark" aria-hidden="true"><use href="#axioma-mark"></use></svg>
         <span class="brand-text">
           <span class="brand-name">AXIOMA</span>
           <span class="brand-sub">CONSULTING</span>
         </span>
       </a>
-
       <div class="footer-meta">
-        <a href="https://www.linkedin.com/company/axiomaconsulting" target="_blank" rel="noopener noreferrer" class="footer-link" aria-label="Perfil de Axioma Consulting en LinkedIn">
-          <svg class="footer-link-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        <a class="footer-linkedin" href="https://www.linkedin.com/company/axiomaconsulting" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"></path></svg>
           <span>LinkedIn</span>
         </a>
         <p class="copyright" data-key="footer.copyright">© 2026 Axioma Consulting. Todos los derechos reservados.</p>
-        <a href="/admin" class="footer-admin" rel="nofollow">Panel interno</a>
+        <a class="footer-admin" href="/admin" rel="nofollow">Panel interno</a>
       </div>
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>

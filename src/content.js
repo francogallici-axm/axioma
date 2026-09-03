@@ -15,6 +15,7 @@ export const CONTENT_SCHEMA = [
       { key: "hero.subtitle", label: "Subtítulo", type: "textarea" },
       { key: "hero.lead1", label: "Bajada", type: "textarea" },
       { key: "hero.cta", label: "Texto del botón principal", type: "text" },
+      { key: "hero.ctaNota", label: "Nota junto al botón", type: "text" },
     ],
   },
   {
@@ -40,6 +41,18 @@ export const CONTENT_SCHEMA = [
       { key: "calc.kicker", label: "Etiqueta de sección", type: "text" },
       { key: "calc.title", label: "Título", type: "text" },
       { key: "calc.intro", label: "Texto de introducción", type: "textarea" },
+      { key: "calc.labelPersonas", label: "Etiqueta · personas", type: "text" },
+      { key: "calc.labelHoras", label: "Etiqueta · horas", type: "text" },
+      { key: "calc.labelCosto", label: "Etiqueta · costo", type: "text" },
+      { key: "calc.supuestos", label: "Nota de supuestos", type: "textarea" },
+      { key: "calc.labelHorasAnuales", label: "Etiqueta · horas al año", type: "text" },
+      { key: "calc.labelAhorro", label: "Etiqueta · ahorro", type: "text" },
+      { key: "calc.vacio", label: "Mensaje sin datos", type: "textarea" },
+      { key: "calc.nodosNota", label: "Nota de la red", type: "textarea" },
+      { key: "calc.gateTitle", label: "Pedido del email", type: "textarea" },
+      { key: "calc.gateLegal", label: "Aviso legal del email", type: "textarea" },
+      { key: "calc.reveladoNota", label: "Nota tras revelar", type: "textarea" },
+      { key: "calc.cta", label: "Botón final", type: "text" },
     ],
   },
   {
@@ -58,6 +71,13 @@ export const CONTENT_SCHEMA = [
       { key: "contacto.title", label: "Título", type: "text" },
       { key: "contacto.intro", label: "Texto de introducción", type: "textarea" },
       { key: "contacto.formSubmit", label: "Texto del botón de envío", type: "text" },
+      { key: "contacto.labelNombre", label: "Etiqueta · nombre", type: "text" },
+      { key: "contacto.labelEmail", label: "Etiqueta · email", type: "text" },
+      { key: "contacto.labelEmpresa", label: "Etiqueta · empresa", type: "text" },
+      { key: "contacto.labelMensaje", label: "Etiqueta · mensaje", type: "text" },
+      { key: "contacto.directo", label: "Texto del email directo", type: "textarea" },
+      { key: "contacto.okTitulo", label: "Título de confirmación", type: "text" },
+      { key: "contacto.okTexto", label: "Texto de confirmación", type: "textarea" },
     ],
   },
   {
@@ -73,7 +93,7 @@ export const DEFAULT_CONTENT = {
   "hero.pillar3": "Calidad",
   "hero.subtitle": "Ayudamos a PyMEs a mejorar sus procesos a través de la tecnología.",
   "hero.lead1":
-    "Digitalizamos, automatizamos y optimizamos operaciones para reducir costos, mejorar tiempos y aumentar el control de la gestión.",
+    "Analizamos y optimizamos operaciones para reducir costos, mejorar tiempos y ganar control sobre la gestión, apoyándonos en la tecnología que mejor se adapte a cada caso.",
   "hero.cta": "Conocé cómo trabajamos",
 
   "quienes.kicker": "Quiénes somos",
@@ -93,7 +113,7 @@ export const DEFAULT_CONTENT = {
   "card3.desc": "Procesos confiables y repetibles: que crecer no signifique perder el control.",
 
   "calc.kicker": "¿Cuánto estás perdiendo?",
-  "calc.title": "¿Cuánto te cuestan las tareas manuales?",
+  "calc.title": "El costo real de las tareas manuales",
   "calc.intro":
     "Estimá en 30 segundos cuánto tiempo y dinero podrías recuperar al año automatizando un proceso manual de tu empresa.",
 
@@ -105,6 +125,47 @@ export const DEFAULT_CONTENT = {
   "contacto.intro":
     "Escribinos para una consulta inicial sin compromiso. Conversamos sobre tu proceso y te decimos con franqueza si podemos ayudarte.",
   "contacto.formSubmit": "Enviar",
+
+  "hero.ctaNota":
+    "30 segundos, tres números",
+  "calc.labelPersonas":
+    "Personas involucradas en el proceso",
+  "calc.labelHoras":
+    "Horas semanales por persona en tareas manuales",
+  "calc.labelCosto":
+    "Costo aproximado por hora",
+  "calc.supuestos":
+    "Estimación orientativa: asume que la automatización elimina alrededor del 45 % del tiempo dedicado a esas tareas repetitivas, sobre 48 semanas laborales al año.",
+  "calc.labelHorasAnuales":
+    "Horas recuperadas al año",
+  "calc.labelAhorro":
+    "De ahorro anual estimado",
+  "calc.vacio":
+    "Completá los tres campos y el estimado aparece solo. No hay botón de calcular.",
+  "calc.nodosNota":
+    "La red se dibuja con tus datos: un nodo por persona, y el tamaño de cada uno son las horas que hoy se van en tareas manuales.",
+  "calc.gateTitle":
+    "Dejanos tu email y te mostramos el monto. Te escribimos una sola vez, y solo si nos lo pedís.",
+  "calc.gateLegal":
+    "Usamos tu email solo para contactarte por esta consulta. No lo compartimos con terceros y podés pedirnos que lo borremos cuando quieras.",
+  "calc.reveladoNota":
+    "Ese número es el techo de lo que se puede recuperar en un año. Cuánto de eso es alcanzable depende del proceso.",
+  "calc.cta":
+    "Quiero que lo analicemos",
+  "contacto.labelNombre":
+    "Nombre",
+  "contacto.labelEmail":
+    "Email",
+  "contacto.labelEmpresa":
+    "Empresa",
+  "contacto.labelMensaje":
+    "Contanos qué proceso te está costando tiempo",
+  "contacto.directo":
+    "O directamente a contacto@axiomaconsulting.com.ar",
+  "contacto.okTitulo":
+    "Recibimos tu mensaje",
+  "contacto.okTexto":
+    "Te respondemos dentro de las próximas 48 horas hábiles, desde contacto@axiomaconsulting.com.ar. Si es urgente, escribinos directamente a ese mismo correo.",
 
   "footer.copyright": "© 2026 Axioma Consulting. Todos los derechos reservados.",
 };

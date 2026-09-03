@@ -40,7 +40,35 @@
     });
   }
 
-  /* ---------- 2. Calculadora ---------- */
+  /* ---------- 2. Espina de progreso (mobile) ---------- */
+  // Lleva el checklist del hero a toda la página: cada sección que se alcanza
+  // marca su nodo. Es decorativa, así que si el navegador no soporta
+  // IntersectionObserver simplemente no aparece: nada se rompe.
+  var spine = $("scrollSpine");
+  if (spine && "IntersectionObserver" in window) {
+    var nodos = [].slice.call(spine.querySelectorAll(".spine-node"));
+    var secciones = nodos
+      .map(function (n) { return document.getElementById(n.dataset.seccion); })
+      .filter(Boolean);
+
+    var observer = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        var i = secciones.indexOf(e.target);
+        if (i < 0) return;
+        if (e.isIntersecting) {
+          nodos[i].classList.add("activa");
+          // Todo lo anterior queda marcado como recorrido.
+          nodos.forEach(function (n, j) { if (j <= i) n.classList.add("visto"); });
+        } else {
+          nodos[i].classList.remove("activa");
+        }
+      });
+    }, { rootMargin: "-45% 0px -45% 0px" });   // se activa al cruzar el centro
+
+    secciones.forEach(function (sec) { observer.observe(sec); });
+  }
+
+  /* ---------- 3. Calculadora ---------- */
   var calcForm = $("calcForm");
   if (!calcForm) return;
 
@@ -204,7 +232,7 @@
   calcForm.addEventListener("change", actualizarCalculo);
   calcForm.addEventListener("submit", function (e) { e.preventDefault(); });
 
-  /* ---------- 3. Candado del monto ---------- */
+  /* ---------- 4. Candado del monto ---------- */
   var gate = $("calcGate");
   var gateBtn = $("calcGateBtn");
   var gateError = $("calcGateError");
@@ -281,7 +309,7 @@
     });
   }
 
-  /* ---------- 4. Formulario de contacto ---------- */
+  /* ---------- 5. Formulario de contacto ---------- */
   var contactForm = $("contactForm");
   var contactBtn = $("contactBtn");
   var contactError = $("contactError");

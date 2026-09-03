@@ -157,6 +157,17 @@
     </div>
   </header>
 
+
+  <!-- Espina de progreso (solo mobile): un nodo por sección, se marca al llegar.
+       Decorativa: la navegación real es el menú. -->
+  <div class="scroll-spine" id="scrollSpine" aria-hidden="true">
+    <span class="spine-node" data-seccion="inicio"></span>
+    <span class="spine-node" data-seccion="quienes-somos"></span>
+    <span class="spine-node" data-seccion="ROI"></span>
+    <span class="spine-node" data-seccion="faq"></span>
+    <span class="spine-node" data-seccion="contacto"></span>
+  </div>
+
   <main id="contenido">
 
     <!-- ============================================================
@@ -183,21 +194,21 @@
 
         <h1 class="pillars">
           <span class="pillars-line" aria-hidden="true"></span>
-          <span class="pillar">
+          <span class="pillar pillar--1">
             <span class="pillar-box" aria-hidden="true">
               <span class="pillar-fill" style="--d:.38s"></span>
               <svg class="pillar-check" viewBox="0 0 24 24" style="--d:.54s"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
             </span>
             <span class="pillar-text anim-up" data-key="hero.pillar1">Tiempos</span>
           </span>
-          <span class="pillar">
+          <span class="pillar pillar--2">
             <span class="pillar-box" aria-hidden="true">
               <span class="pillar-fill" style="--d:.5s"></span>
               <svg class="pillar-check" viewBox="0 0 24 24" style="--d:.66s"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
             </span>
             <span class="pillar-text anim-up" style="--d:.09s" data-key="hero.pillar2">Costos</span>
           </span>
-          <span class="pillar">
+          <span class="pillar pillar--3">
             <span class="pillar-box" aria-hidden="true">
               <span class="pillar-fill" style="--d:.62s"></span>
               <svg class="pillar-check" viewBox="0 0 24 24" style="--d:.78s"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
@@ -231,26 +242,23 @@
           <p data-key="quienes.p3">Trabajamos por objetivos y resultados concretos, con soluciones adaptadas a la realidad de cada empresa.</p>
         </div>
 
-        <div class="cards-wrap">
-          <div class="cards-rule" aria-hidden="true">
-            <span class="rule-node"></span><span class="rule-line"></span>
-            <span class="rule-node"></span><span class="rule-line"></span>
-            <span class="rule-node"></span>
+        <div class="cards">
+          <div class="card">
+            <span class="card-node" aria-hidden="true"></span>
+            <h3 data-key="card1.title">Datos &amp; Tecnología</h3>
+            <p data-key="card1.desc">Análisis de datos y soporte IT para tomar decisiones con información, no con intuición.</p>
           </div>
-          <div class="cards">
-            <div class="card">
-              <h3 data-key="card1.title">Datos &amp; Tecnología</h3>
-              <p data-key="card1.desc">Análisis de datos y soporte IT para tomar decisiones con información, no con intuición.</p>
-            </div>
-            <div class="card">
-              <h3 data-key="card2.title">Operaciones &amp; Logística</h3>
-              <p data-key="card2.desc">Ventas, logística y procesos operativos optimizados para escalar sin fricción.</p>
-            </div>
-            <div class="card">
-              <h3 data-key="card3.title">Aseguramiento de Calidad</h3>
-              <p data-key="card3.desc">Procesos confiables y repetibles: que crecer no signifique perder el control.</p>
-            </div>
+          <div class="card">
+            <span class="card-node" aria-hidden="true"></span>
+            <h3 data-key="card2.title">Operaciones &amp; Logística</h3>
+            <p data-key="card2.desc">Ventas, logística y procesos operativos optimizados para escalar sin fricción.</p>
           </div>
+          <div class="card">
+            <span class="card-node" aria-hidden="true"></span>
+            <h3 data-key="card3.title">Aseguramiento de Calidad</h3>
+            <p data-key="card3.desc">Procesos confiables y repetibles: que crecer no signifique perder el control.</p>
+          </div>
+        </div>
         </div>
       </div>
     </section>

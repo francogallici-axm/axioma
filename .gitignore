@@ -28,3 +28,6 @@ skills-lock.json
 
 # Notas sueltas de trabajo
 prompt-chrome-extension.txt
+
+# Archivos del proyecto de Claude Design (referencia, no forma parte del sitio)
+.diseno/

@@ -335,6 +335,96 @@ async function notificarLead(env, lead) {
   }
 }
 
+/* ================= Consultas del formulario de contacto ================= */
+
+const CONTACTO_PREFIX = "contacto:";
+
+/**
+ * Guarda un mensaje del formulario de contacto. Misma estrategia que los leads:
+ * cada uno en su propia clave, para que dos envios simultaneos no se pisen.
+ */
+async function guardarContacto(env, cuerpo, request) {
+  const email = typeof cuerpo.email === "string" ? cuerpo.email.trim().toLowerCase() : "";
+  if (!emailValido(email)) return { error: "Email inválido" };
+
+  // Trampa para bots: campo oculto que una persona nunca completa.
+  if (cuerpo.website) return { error: null, descartado: true };
+
+  const texto = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+  const nombre = texto(cuerpo.nombre, 120);
+  if (!nombre) return { error: "Falta el nombre" };
+
+  const referer = request.headers.get("Referer") || "";
+  let origen = "";
+  try {
+    origen = referer ? nombreDeFuente(new URL(referer).hostname) : "";
+  } catch {
+    origen = "";
+  }
+
+  const consulta = {
+    nombre,
+    email,
+    empresa: texto(cuerpo.empresa, 160),
+    mensaje: texto(cuerpo.mensaje, 4000),
+    fecha: new Date().toISOString(),
+    origen: origen || "Directo / desconocido",
+    pais: request.headers.get("CF-IPCountry") || "",
+  };
+
+  const clave = CONTACTO_PREFIX + consulta.fecha + ":" + Math.random().toString(36).slice(2, 8);
+  await env.CONTENT_KV.put(clave, JSON.stringify(consulta));
+  return { error: null, consulta };
+}
+
+async function listarContactos(env) {
+  if (!env.CONTENT_KV) return [];
+  const listado = await env.CONTENT_KV.list({ prefix: CONTACTO_PREFIX, limit: MAX_LEADS_LISTADOS });
+  const filas = await Promise.all(
+    listado.keys.map((k) => env.CONTENT_KV.get(k.name, "json").catch(() => null))
+  );
+  return filas.filter(Boolean).reverse();
+}
+
+/** Avisa por mail que llego un mensaje de contacto. Si faltan los secrets, se
+ *  omite en silencio: el mensaje ya quedo guardado, que es lo que importa. */
+async function notificarContacto(env, c) {
+  if (!env.RESEND_API_KEY || !env.LEAD_NOTIFY_TO) return;
+
+  const texto = [
+    "Llego un mensaje desde el formulario de contacto.",
+    "",
+    "Nombre: " + c.nombre,
+    "Email: " + c.email,
+    "Empresa: " + (c.empresa || "(no indicó)"),
+    "Origen: " + c.origen,
+    "",
+    "Mensaje:",
+    c.mensaje || "(sin mensaje)",
+    "",
+    "Fecha: " + c.fecha,
+  ].join(String.fromCharCode(10));
+
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.LEAD_NOTIFY_FROM || "Axioma <onboarding@resend.dev>",
+        to: env.LEAD_NOTIFY_TO.split(",").map((x) => x.trim()),
+        reply_to: c.email,
+        subject: "Nuevo mensaje de contacto — " + c.nombre,
+        text: texto,
+      }),
+    });
+  } catch {
+    // Un fallo al avisar no debe romper la experiencia del visitante.
+  }
+}
+
 /** Escapa texto para insertarlo de forma segura dentro del HTML. */
 function escapeHtml(str) {
   return String(str)
@@ -412,8 +502,10 @@ class FaqListInjector {
     const html = this.faq
       .map(
         (item) =>
-          `<details class="faq-item"><summary>${escapeHtml(item.q)}</summary>` +
-          `<p>${escapeHtml(item.a)}</p></details>`
+          `<details class="faq-item">` +
+          `<summary><span>${escapeHtml(item.q)}</span>` +
+          `<span class="faq-icon" aria-hidden="true"></span></summary>` +
+          `<div><p>${escapeHtml(item.a)}</p></div></details>`
       )
       .join("");
     el.setInnerContent(html, { html: true });
@@ -491,6 +583,31 @@ export default {
       // El aviso por mail no debe demorar la respuesta al visitante.
       ctx.waitUntil(notificarLead(env, lead));
       return jsonResponse({ ok: true });
+    }
+
+    // ---------- Formulario de contacto (PÚBLICO) ----------
+    // Fuera de /admin a propósito: adentro, Access se lo bloquearía al visitante.
+    if (pathname === "/api/contacto" && request.method === "POST") {
+      let cuerpo;
+      try {
+        cuerpo = await request.json();
+      } catch {
+        return jsonResponse({ error: "JSON inválido" }, { status: 400 });
+      }
+
+      const { error, consulta, descartado } = await guardarContacto(env, cuerpo, request);
+      if (error) return jsonResponse({ error }, { status: 400 });
+
+      // A los bots se les responde OK sin guardar nada, para no darles pistas.
+      if (descartado) return jsonResponse({ ok: true });
+
+      ctx.waitUntil(notificarContacto(env, consulta));
+      return jsonResponse({ ok: true });
+    }
+
+    // ---------- Mensajes de contacto (protegida por Access) ----------
+    if (pathname === "/admin/api/contactos" && request.method === "GET") {
+      return jsonResponse(await listarContactos(env));
     }
 
     // ---------- Consultas recibidas (protegida por Access) ----------

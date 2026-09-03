@@ -1,216 +1,343 @@
 /* ============================================================
-   AXIOMA CONSULTING — Interacciones mínimas
-   1. Navbar sólido al hacer scroll
-   2. Menú móvil (hamburguesa)
-   3. Fade-in de elementos .reveal al entrar en viewport
+   AXIOMA CONSULTING — Interacciones
+   1. Menú móvil
+   2. Calculadora de ahorro (con red animada y selector de moneda)
+   3. Candado: el monto se revela al dejar el email
+   4. Formulario de contacto
    ============================================================ */
 (function () {
   "use strict";
 
-  /* ---------- 1. Navbar sólido al hacer scroll ---------- */
-  var navbar = document.getElementById("navbar");
-  function onScroll() {
-    if (window.scrollY > 40) {
-      navbar.classList.add("scrolled");
-    } else {
-      navbar.classList.remove("scrolled");
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ---------- 1. Menú móvil ---------- */
+  var navToggle = $("navToggle");
+  var navMain = $("navMain");
+
+  if (navToggle && navMain) {
+    function cerrarMenu() {
+      navMain.setAttribute("data-abierto", "false");
+      navToggle.setAttribute("aria-expanded", "false");
+      navToggle.setAttribute("aria-label", "Abrir menú");
     }
-  }
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-
-  /* ---------- 2. Menú móvil ---------- */
-  var toggle = document.getElementById("navToggle");
-  var links = document.querySelector(".nav-links");
-
-  function closeMenu() {
-    toggle.classList.remove("open");
-    links.classList.remove("open");
-    toggle.setAttribute("aria-expanded", "false");
-  }
-
-  toggle.addEventListener("click", function () {
-    var isOpen = links.classList.toggle("open");
-    toggle.classList.toggle("open", isOpen);
-    toggle.setAttribute("aria-expanded", String(isOpen));
-  });
-
-  // cerrar el menú al clickear un link
-  links.querySelectorAll("a").forEach(function (a) {
-    a.addEventListener("click", closeMenu);
-  });
-
-  /* ---------- 3. Reveal on scroll ---------- */
-  var revealEls = document.querySelectorAll(".reveal");
-
-  if ("IntersectionObserver" in window) {
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
-    );
-    revealEls.forEach(function (el) { observer.observe(el); });
-  } else {
-    // Fallback: mostrar todo
-    revealEls.forEach(function (el) { el.classList.add("visible"); });
-  }
-
-  /* ---------- 4. Calculadora de ahorro / ROI ---------- */
-  var calcForm = document.getElementById("calcForm");
-
-  if (calcForm) {
-    // Supuestos del cálculo. Ambos se muestran en pantalla (ver más abajo):
-    // si se cambian acá, el texto que lee el visitante se actualiza solo.
-    var FACTOR_AUTOMATIZACION = 0.45;  // parte del tiempo manual que se recupera
-    var SEMANAS_POR_ANIO = 48;        // descontando vacaciones y feriados
-
-    // Escribimos los supuestos en el texto para que no puedan desincronizarse
-    // del cálculo.
-    var notaFactor = document.getElementById("calcFactorPct");
-    var notaSemanas = document.getElementById("calcSemanas");
-    if (notaFactor) notaFactor.textContent = Math.round(FACTOR_AUTOMATIZACION * 100);
-    if (notaSemanas) notaSemanas.textContent = SEMANAS_POR_ANIO;
-
-    var inputPersonas = document.getElementById("calcPersonas");
-    var inputHoras = document.getElementById("calcHoras");
-    var inputCosto = document.getElementById("calcCosto");
-    var outHoras = document.getElementById("calcHorasAnuales");
-    var outAhorro = document.getElementById("calcAhorroAnual");
-
-    var formatoMoneda = new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      maximumFractionDigits: 0,
+    navToggle.addEventListener("click", function () {
+      var abierto = navMain.getAttribute("data-abierto") === "true";
+      navMain.setAttribute("data-abierto", String(!abierto));
+      navToggle.setAttribute("aria-expanded", String(!abierto));
+      navToggle.setAttribute("aria-label", abierto ? "Abrir menú" : "Cerrar menú");
     });
-    var formatoNumero = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+    navMain.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", cerrarMenu);
+    });
+    // Escape cierra el menú: obligatorio para navegación por teclado.
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && navMain.getAttribute("data-abierto") === "true") {
+        cerrarMenu();
+        navToggle.focus();
+      }
+    });
+  }
 
-    function valorValido(input) {
-      var n = parseFloat(input.value);
-      return isFinite(n) && n > 0 ? n : 0;
+  /* ---------- 2. Calculadora ---------- */
+  var calcForm = $("calcForm");
+  if (!calcForm) return;
+
+  // Supuestos del cálculo. Ambos se muestran en pantalla: si se cambian acá,
+  // el texto que lee el visitante se actualiza solo y no puede contradecirlo.
+  var FACTOR_AUTOMATIZACION = 0.45;  // parte del tiempo manual que se recupera
+  var SEMANAS_POR_ANIO = 48;         // descontando vacaciones y feriados
+
+  var notaFactor = $("calcFactorPct");
+  var notaSemanas = $("calcSemanas");
+  if (notaFactor) notaFactor.textContent = Math.round(FACTOR_AUTOMATIZACION * 100);
+  if (notaSemanas) notaSemanas.textContent = SEMANAS_POR_ANIO;
+
+  var inPersonas = $("calcPersonas");
+  var inHoras = $("calcHoras");
+  var inCosto = $("calcCosto");
+  var inMoneda = $("calcMoneda");
+
+  var outHoras = $("calcHorasAnuales");
+  var outMonto = $("calcAhorroAnual");
+  var boxVacio = $("calcVacio");
+  var boxResultado = $("calcResultado");
+  var net = $("calcNet");
+  var netNota = $("calcNetNota");
+
+  var fmtNumero = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+  function fmtMoneda(valor) {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: inMoneda ? inMoneda.value : "ARS",
+      maximumFractionDigits: 0,
+    }).format(valor);
+  }
+
+  function num(input) {
+    var n = parseFloat(input.value);
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  var desbloqueada = false;
+  var ultimoCalculo = { horasAnuales: 0, ahorroAnual: 0 };
+  var ultimasHoras = null;
+
+  /* --- Red de nodos: uno por persona, tamaño según las horas --- */
+  // Los nodos viven en su propia banda, en abanico sobre un concentrador fijo:
+  // ninguna coordenada compite con una caja de texto.
+  var SLOTS = [
+    [32, 64], [288, 64], [160, 16], [96, 26], [224, 26],
+    [56, 42], [264, 42], [120, 44], [200, 44], [84, 62],
+    [236, 62], [160, 50]
+  ];
+  var NS = "http://www.w3.org/2000/svg";
+  var lineas = [];
+  var circulos = [];
+
+  function construirRed() {
+    if (!net) return;
+    var gLineas = document.createElementNS(NS, "g");
+    gLineas.setAttribute("stroke", "#7eb0b1");
+    gLineas.setAttribute("stroke-width", "1");
+    gLineas.setAttribute("fill", "none");
+    gLineas.setAttribute("opacity", "0.35");
+
+    var gNodos = document.createElementNS(NS, "g");
+    gNodos.setAttribute("fill", "#072528");
+    gNodos.setAttribute("stroke", "#7eb0b1");
+    gNodos.setAttribute("stroke-width", "1.3");
+
+    SLOTS.forEach(function (p, i) {
+      var l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", 160); l.setAttribute("y1", 102);
+      l.setAttribute("x2", p[0]); l.setAttribute("y2", p[1]);
+      l.style.opacity = 0;
+      l.style.transition = "opacity .24s ease " + (i * 20) + "ms";
+      gLineas.appendChild(l);
+      lineas.push(l);
+
+      var c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", p[0]); c.setAttribute("cy", p[1]); c.setAttribute("r", 5);
+      c.style.transformOrigin = p[0] + "px " + p[1] + "px";
+      c.style.transform = "scale(0.4)";
+      c.style.opacity = 0;
+      c.style.transition =
+        "transform .24s cubic-bezier(.22,.61,.36,1) " + (i * 20) + "ms, " +
+        "opacity .24s ease " + (i * 20) + "ms, r .24s ease";
+      gNodos.appendChild(c);
+      circulos.push(c);
+    });
+
+    var centro = document.createElementNS(NS, "circle");
+    centro.setAttribute("cx", 160); centro.setAttribute("cy", 102);
+    centro.setAttribute("r", 6); centro.setAttribute("fill", "#7eb0b1");
+
+    net.appendChild(gLineas);
+    net.appendChild(gNodos);
+    net.appendChild(centro);
+  }
+
+  function pintarRed(personas, horas) {
+    var activos = Math.max(0, Math.min(SLOTS.length, Math.round(personas)));
+    var radio = Math.max(5, Math.min(13, 5 + horas * 0.7));
+    circulos.forEach(function (c, i) {
+      var visible = i < activos;
+      c.setAttribute("r", radio);
+      c.style.transform = visible ? "scale(1)" : "scale(0.4)";
+      c.style.opacity = visible ? 1 : 0;
+      lineas[i].style.opacity = visible ? 1 : 0;
+    });
+  }
+
+  function actualizarCalculo() {
+    var personas = num(inPersonas);
+    var horas = num(inHoras);
+    var costo = num(inCosto);
+    var vacio = !(personas && horas && costo);
+
+    pintarRed(personas, horas);
+
+    if (vacio) {
+      outHoras.textContent = "—";
+      ultimoCalculo = { horasAnuales: 0, ahorroAnual: 0 };
+      if (boxVacio) boxVacio.hidden = false;
+      if (boxResultado) boxResultado.hidden = true;
+      if (netNota) {
+        netNota.textContent = "La red se dibuja con tus datos: un nodo por persona, " +
+          "y el tamaño de cada uno son las horas que hoy se van en tareas manuales.";
+      }
+      return;
     }
 
-    // Estado del "candado": hasta que no dejen el email, el monto en pesos ni
-    // siquiera se escribe en la página (difuminarlo por CSS se saltea mirando
-    // el código de la página).
-    var desbloqueada = true;
-    var ultimoCalculo = { horasAnuales: 0, ahorroAnual: 0 };
+    var horasAnuales = personas * horas * SEMANAS_POR_ANIO * FACTOR_AUTOMATIZACION;
+    var ahorroAnual = horasAnuales * costo;
+    ultimoCalculo = { horasAnuales: horasAnuales, ahorroAnual: ahorroAnual };
 
-    function actualizarCalculo() {
-      var personas = valorValido(inputPersonas);
-      var horas = valorValido(inputHoras);
-      var costo = valorValido(inputCosto);
+    var redondeadas = Math.round(horasAnuales);
+    outHoras.textContent = fmtNumero.format(redondeadas);
+    // Solo reanimamos cuando el número cambia de verdad.
+    if (ultimasHoras !== redondeadas) {
+      ultimasHoras = redondeadas;
+      outHoras.classList.remove("pulso");
+      void outHoras.offsetWidth;
+      outHoras.classList.add("pulso");
+    }
 
-      if (!personas || !horas || !costo) {
-        outHoras.textContent = "—";
-        outAhorro.textContent = "—";
-        ultimoCalculo = { horasAnuales: 0, ahorroAnual: 0 };
+    // El monto real no se escribe en la página hasta que dejan el email:
+    // difuminarlo por CSS se saltea inspeccionando el código.
+    outMonto.textContent = desbloqueada ? fmtMoneda(ahorroAnual) : "$ ●.●●●.●●●";
+    outMonto.classList.toggle("calc-monto--bloqueado", !desbloqueada);
+
+    if (boxVacio) boxVacio.hidden = true;
+    if (boxResultado) boxResultado.hidden = false;
+    if (netNota) {
+      netNota.textContent = "Cada nodo es una de las " + fmtNumero.format(Math.round(personas)) +
+        " personas del proceso y su tamaño son las " + fmtNumero.format(Math.round(horas)) +
+        " horas semanales que hoy se van en tareas manuales. Todas confluyen en el mismo punto: la cifra de arriba.";
+    }
+  }
+
+  construirRed();
+  calcForm.addEventListener("input", actualizarCalculo);
+  calcForm.addEventListener("change", actualizarCalculo);
+  calcForm.addEventListener("submit", function (e) { e.preventDefault(); });
+
+  /* ---------- 3. Candado del monto ---------- */
+  var gate = $("calcGate");
+  var gateBtn = $("calcGateBtn");
+  var gateError = $("calcGateError");
+  var gateEmail = $("calcEmail");
+  var gateHp = $("calcWebsite");
+  var revelado = $("calcRevelado");
+
+  // El desbloqueo dura solo lo que dure la visita: sessionStorage se borra al
+  // cerrar la pestaña, así una consulta nueva más adelante vuelve a registrarse.
+  var CLAVE = "axioma.calc.desbloqueada";
+  function yaDesbloqueada() {
+    try { return sessionStorage.getItem(CLAVE) === "1"; } catch (e) { return false; }
+  }
+  try { localStorage.removeItem(CLAVE); } catch (e) { /* modo privado */ }
+
+  function desbloquear() {
+    desbloqueada = true;
+    if (gate) gate.hidden = true;
+    if (revelado) revelado.hidden = false;
+    actualizarCalculo();
+  }
+
+  function cargando(btn, activo, textoActivo, textoNormal) {
+    btn.disabled = activo;
+    btn.querySelector(".spinner").hidden = !activo;
+    btn.querySelector(".btn-texto").textContent = activo ? textoActivo : textoNormal;
+  }
+
+  if (gate) {
+    if (yaDesbloqueada()) desbloquear();
+
+    gate.addEventListener("submit", function (e) {
+      e.preventDefault();
+      gateError.hidden = true;
+      gateEmail.classList.remove("con-error");
+
+      var email = (gateEmail.value || "").trim();
+      if (!EMAIL_RE.test(email)) {
+        gateError.textContent = "Revisá el email, parece incompleto.";
+        gateError.hidden = false;
+        gateEmail.classList.add("con-error");
+        gateEmail.focus();
         return;
       }
 
-      var horasAnuales = personas * horas * SEMANAS_POR_ANIO * FACTOR_AUTOMATIZACION;
-      var ahorroAnual = horasAnuales * costo;
-      ultimoCalculo = { horasAnuales: horasAnuales, ahorroAnual: ahorroAnual };
+      cargando(gateBtn, true, "Enviando…", "Ver el ahorro");
 
-      outHoras.textContent = formatoNumero.format(horasAnuales);
-      outAhorro.textContent = desbloqueada
-        ? formatoMoneda.format(ahorroAnual)
-        : "$ ●.●●●.●●●";
-    }
+      fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          website: gateHp ? gateHp.value : "",
+          personas: num(inPersonas),
+          horas: num(inHoras),
+          costo: num(inCosto),
+          moneda: inMoneda ? inMoneda.value : "ARS",
+          horasAnuales: ultimoCalculo.horasAnuales,
+          ahorroAnual: ultimoCalculo.ahorroAnual,
+        }),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("No se pudo enviar");
+          try { sessionStorage.setItem(CLAVE, "1"); } catch (e) { /* modo privado */ }
+          desbloquear();
+        })
+        .catch(function () {
+          gateError.textContent = "No pudimos guardar tu email. Revisá tu conexión e intentá de nuevo.";
+          gateError.hidden = false;
+        })
+        .then(function () {
+          cargando(gateBtn, false, "Enviando…", "Ver el ahorro");
+        });
+    });
+  }
 
-    calcForm.addEventListener("input", actualizarCalculo);
-    calcForm.addEventListener("submit", function (e) { e.preventDefault(); });
+  /* ---------- 4. Formulario de contacto ---------- */
+  var contactForm = $("contactForm");
+  var contactBtn = $("contactBtn");
+  var contactError = $("contactError");
+  var contactOk = $("contactOk");
 
-    /* ---- Revelado del ahorro en pesos a cambio del email ---- */
-    var gate = document.getElementById("calcGate");
-    var gateBtn = document.getElementById("calcGateBtn");
-    var gateError = document.getElementById("calcGateError");
-    var inputEmail = document.getElementById("calcEmail");
-    var inputWebsite = document.getElementById("calcWebsite");
-    var ahorroBox = document.getElementById("calcAhorroBox");
-    var cta = document.getElementById("calcCta");
+  if (contactForm) {
+    contactForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      contactError.hidden = true;
 
-    // El desbloqueo dura solo lo que dure la visita: usamos sessionStorage, que
-    // se borra al cerrar la pestaña. Asi, si la persona vuelve otro dia con una
-    // consulta nueva, la registramos de nuevo en vez de perderla.
-    var YA_DESBLOQUEADO = "axioma.calc.desbloqueada";
-    function estaDesbloqueada() {
-      try { return sessionStorage.getItem(YA_DESBLOQUEADO) === "1"; } catch (e) { return false; }
-    }
-    // Limpieza: la version anterior guardaba la marca en localStorage (para
-    // siempre). La borramos para no dejar datos huerfanos en el navegador.
-    try { localStorage.removeItem(YA_DESBLOQUEADO); } catch (e) { /* modo privado */ }
+      var nombre = ($("nombre").value || "").trim();
+      var email = ($("email").value || "").trim();
 
-    function recordarDesbloqueo() {
-      try { sessionStorage.setItem(YA_DESBLOQUEADO, "1"); } catch (e) { /* modo privado */ }
-    }
-
-    function desbloquear() {
-      desbloqueada = true;
-      if (gate) gate.hidden = true;
-      if (cta) cta.hidden = false;
-      if (ahorroBox) ahorroBox.classList.remove("calc-result--bloqueado");
-      actualizarCalculo();
-    }
-
-    if (gate) {
-      if (estaDesbloqueada()) {
-        desbloquear();
-      } else {
-        desbloqueada = false;
-        ahorroBox.classList.add("calc-result--bloqueado");
+      if (!nombre) {
+        contactError.textContent = "Necesitamos tu nombre para responderte.";
+        contactError.hidden = false;
+        $("nombre").focus();
+        return;
+      }
+      if (!EMAIL_RE.test(email)) {
+        contactError.textContent = "Revisá el email, parece incompleto.";
+        contactError.hidden = false;
+        $("email").focus();
+        return;
       }
 
-      gate.addEventListener("submit", function (e) {
-        e.preventDefault();
-        gateError.hidden = true;
+      cargando(contactBtn, true, "Enviando…", "Enviar");
 
-        var email = (inputEmail.value || "").trim();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-          gateError.textContent = "Revisá el email, parece incompleto.";
-          gateError.hidden = false;
-          inputEmail.focus();
-          return;
-        }
-
-        gateBtn.disabled = true;
-        gateBtn.textContent = "Enviando…";
-
-        fetch("/api/lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: email,
-            website: inputWebsite ? inputWebsite.value : "",
-            personas: valorValido(inputPersonas),
-            horas: valorValido(inputHoras),
-            costo: valorValido(inputCosto),
-            horasAnuales: ultimoCalculo.horasAnuales,
-            ahorroAnual: ultimoCalculo.ahorroAnual,
-          }),
+      fetch("/api/contacto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: nombre,
+          email: email,
+          empresa: ($("empresa").value || "").trim(),
+          mensaje: ($("mensaje").value || "").trim(),
+          website: $("contactoWebsite") ? $("contactoWebsite").value : "",
+        }),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("No se pudo enviar");
+          contactForm.hidden = true;
+          contactOk.hidden = false;
+          contactOk.setAttribute("tabindex", "-1");
+          contactOk.focus();
         })
-          .then(function (res) {
-            if (!res.ok) throw new Error("No se pudo enviar");
-            recordarDesbloqueo();
-            desbloquear();
-          })
-          .catch(function () {
-            gateError.textContent =
-              "No pudimos guardar tu email. Revisá tu conexión e intentá de nuevo.";
-            gateError.hidden = false;
-          })
-          .then(function () {
-            gateBtn.disabled = false;
-            gateBtn.textContent = "Ver el ahorro";
-          });
-      });
-    }
-
-    actualizarCalculo();
+        .catch(function () {
+          contactError.textContent =
+            "No pudimos enviar tu mensaje. Revisá tu conexión, o escribinos directamente a contacto@axiomaconsulting.com.ar";
+          contactError.hidden = false;
+        })
+        .then(function () {
+          cargando(contactBtn, false, "Enviando…", "Enviar");
+        });
+    });
   }
+
+  actualizarCalculo();
 })();

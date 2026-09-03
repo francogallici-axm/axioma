@@ -91,6 +91,25 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
 @keyframes ax-line { from { transform: scaleY(0); }                    to { transform: scaleY(1); } }
 @keyframes ax-body { from { opacity: 0; transform: translateY(6px); }  to { opacity: 1; transform: none; } }
 @keyframes ax-spin { to { transform: rotate(360deg); } }
+
+/* El pulso recorre la línea y enciende cada pilar al pasar. No los desmarca:
+   desmarcar contaría que el trabajo se deshace, que es lo contrario del mensaje. */
+@keyframes ax-pulso-linea {
+  0%        { transform: translateY(-100%); opacity: 0; }
+  6%        { opacity: 1; }
+  46%       { opacity: 1; }
+  52%, 100% { transform: translateY(222%); opacity: 0; }
+}
+@keyframes ax-realce {
+  0%, 4%    { color: var(--white); }
+  12%       { color: var(--cream); }
+  22%, 100% { color: var(--white); }
+}
+@keyframes ax-realce-nodo {
+  0%, 4%    { box-shadow: 0 0 0 0 rgba(126, 176, 177, 0); border-color: rgba(126, 176, 177, 0.45); }
+  12%       { box-shadow: 0 0 0 7px rgba(126, 176, 177, 0.16); border-color: var(--teal); }
+  22%, 100% { box-shadow: 0 0 0 0 rgba(126, 176, 177, 0); border-color: rgba(126, 176, 177, 0.45); }
+}
 @keyframes ax-drift-a { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, -6px); } }
 @keyframes ax-drift-b { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5px, 4px); } }
 @keyframes ax-drift-c { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(3px, 5px); } }
@@ -246,12 +265,28 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
 }
 .pillars-line {
   position: absolute;
+  overflow: hidden;
   left: calc(clamp(28px, 4vw, 36px) / 2 - 1px);
   top: 1.05em; bottom: 1.05em; width: 2px;
   background: rgba(126, 176, 177, 0.35);
   transform-origin: top;
   animation: ax-line .5s cubic-bezier(.22, .61, .36, 1) .18s both;
 }
+/* Trazo que viaja por la línea, en loop, una vez terminada la entrada. */
+.pillars-line::after {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 0; height: 45%;
+  background: linear-gradient(to bottom, transparent, var(--teal), transparent);
+  animation: ax-pulso-linea 7s ease-in-out 1.4s infinite;
+}
+/* Cada pilar se enciende cuando el pulso lo cruza. Los retrasos reparten el
+   recorrido: el ciclo dura 7s y el pulso baja durante la primera mitad. */
+.pillar--1 .pillar-text { animation: ax-realce 7s ease-in-out 1.4s infinite; }
+.pillar--2 .pillar-text { animation: ax-realce 7s ease-in-out 2.1s infinite; }
+.pillar--3 .pillar-text { animation: ax-realce 7s ease-in-out 2.8s infinite; }
+.pillar--1 .pillar-box  { animation: ax-realce-nodo 7s ease-in-out 1.4s infinite; }
+.pillar--2 .pillar-box  { animation: ax-realce-nodo 7s ease-in-out 2.1s infinite; }
+.pillar--3 .pillar-box  { animation: ax-realce-nodo 7s ease-in-out 2.8s infinite; }
 .pillar { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 22px); }
 .pillar-box {
   position: relative; z-index: 1; flex: 0 0 auto;
@@ -294,16 +329,57 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
   border-left: 2px solid var(--teal); padding-left: 22px; margin: 8px 0;
 }
 
-.cards-wrap { margin-top: clamp(48px, 7vw, 72px); }
-.cards-rule { display: flex; align-items: center; padding: 0 clamp(0px, 6vw, 110px); }
-.rule-node { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--teal); background: var(--green-dark); flex: 0 0 auto; }
-.rule-line { flex: 1; height: 1px; background: rgba(126, 176, 177, 0.45); }
 .cards {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: clamp(24px, 4vw, 40px); margin-top: 26px;
+  gap: clamp(24px, 4vw, 40px);
+  margin-top: clamp(48px, 7vw, 72px);
+}
+/* Las tres áreas son miradas distintas sobre el mismo problema: el hilo que
+   las une es parte de la tarjeta, no un adorno aparte, así gira con el layout. */
+.card {
+  position: relative;
+  background: rgba(126, 176, 177, 0.04);
+  border: 1px solid rgba(126, 176, 177, 0.22);
+  border-radius: 6px;
+  padding: 30px 24px 26px;
+  transition: border-color .22s ease, background-color .22s ease, transform .22s ease;
+}
+.card:hover {
+  border-color: rgba(126, 176, 177, 0.5);
+  background: rgba(126, 176, 177, 0.07);
+  transform: translateY(-3px);
+}
+.card-node {
+  position: absolute; z-index: 1;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1.5px solid var(--teal); background: var(--green-dark);
 }
 .card h3 { font-size: 1.25rem; color: var(--white); margin-bottom: 10px; }
 .card p { font-size: 0.9375rem; color: rgba(255, 255, 255, 0.78); }
+
+/* Escritorio: el nodo corona la tarjeta y el hilo corre horizontal. */
+@media (min-width: 760px) {
+  .card { padding-top: 34px; }
+  .card-node { top: -7px; left: 28px; }
+  .card:not(:last-child)::after {
+    content: "";
+    position: absolute; top: -1px; left: calc(28px + 14px);
+    width: calc(100% - 28px - 14px + clamp(24px, 4vw, 40px) + 28px);
+    height: 1px; background: rgba(126, 176, 177, 0.35);
+  }
+}
+/* Mobile: las tarjetas se apilan, así que el hilo se pone vertical y las
+   sigue uniendo en vez de quedar cruzado arriba. */
+@media (max-width: 759px) {
+  .card { padding-left: 44px; }
+  .card-node { top: 32px; left: 15px; }
+  .card:not(:last-child)::after {
+    content: "";
+    position: absolute; left: 21px; top: calc(32px + 14px);
+    width: 1px; height: calc(100% - 32px - 14px + clamp(24px, 4vw, 40px) + 32px);
+    background: rgba(126, 176, 177, 0.35);
+  }
+}
 
 /* ============================================================
    CALCULADORA
@@ -473,3 +549,41 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
 .copyright { font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); }
 .footer-admin { font-size: 0.8125rem; color: rgba(255, 255, 255, 0.35); }
 .footer-admin:hover { color: var(--teal); }
+
+/* ============================================================
+   ESPINA DE PROGRESO (solo mobile)
+   Lleva el checklist del hero a toda la página: un nodo por sección,
+   que se marca al llegar. Fina y al borde, para no tapar contenido.
+   ============================================================ */
+.scroll-spine { display: none; }
+
+@media (max-width: 899px) {
+  /* Le damos margen extra al contenido para que la espina no lo roce. */
+  .container { padding-left: calc(var(--gutter) + 14px); }
+  .scroll-spine {
+    position: fixed; left: 4px; top: 50%; transform: translateY(-50%);
+    z-index: 90; display: flex; flex-direction: column; gap: 14px;
+    align-items: center; pointer-events: none;
+  }
+  /* El hilo detrás de los nodos */
+  .scroll-spine::before {
+    content: "";
+    position: absolute; left: 50%; top: 4px; bottom: 4px; width: 1px;
+    transform: translateX(-50%);
+    background: rgba(126, 176, 177, 0.28);
+  }
+  .spine-node {
+    position: relative;
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid rgba(126, 176, 177, 0.45);
+    background: var(--green-deep);
+    transition: background-color .3s ease, border-color .3s ease, transform .3s ease;
+  }
+  /* Ya recorrida */
+  .spine-node.visto { background: rgba(126, 176, 177, 0.55); border-color: var(--teal); }
+  /* La sección que se está mirando */
+  .spine-node.activa {
+    background: var(--teal); border-color: var(--teal); transform: scale(1.45);
+    box-shadow: 0 0 0 4px rgba(126, 176, 177, 0.16);
+  }
+}

@@ -214,6 +214,8 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
   }
   .nav-main[data-abierto="true"] { transform: translateX(0); visibility: visible; pointer-events: auto; }
   .nav-cta { display: none !important; }
+  /* En mobile la red se oculta: detrás del texto en pantalla chica
+     comprometería la lectura. */
   .hero-net { display: none; }
 }
 
@@ -243,13 +245,36 @@ select:focus-visible, textarea:focus-visible, summary:focus-visible {
   background: var(--green-deep);
   padding: clamp(56px, 10vh, 104px) 0 clamp(64px, 10vh, 112px);
 }
-.hero-net {
-  position: absolute; right: 0; top: 0; height: 100%;
-  width: min(62%, 760px); opacity: 0.55; pointer-events: none;
-}
 .net-node { animation: ax-node .3s ease-out var(--d) both, ax-drift-a 24s ease-in-out calc(var(--d) + .3s) infinite; }
 .net-node--b { animation-name: ax-node, ax-drift-b; animation-duration: .3s, 21s; }
 .net-node--c { animation-name: ax-node, ax-drift-c; animation-duration: .3s, 26s; }
+
+/* La red cruza todo el hero y pasa por detrás del texto, pero se desvanece
+   justo donde vive el copy: aporta atmósfera sin pelear con la lectura.
+   La máscara es lo que permite subirle presencia del lado derecho. */
+.hero-net {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0.55;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(95deg,
+    transparent 0%, transparent 20%,
+    rgba(0, 0, 0, 0.14) 36%, rgba(0, 0, 0, 0.55) 54%,
+    rgba(0, 0, 0, 0.9) 70%, #000 82%);
+  mask-image: linear-gradient(95deg,
+    transparent 0%, transparent 20%,
+    rgba(0, 0, 0, 0.14) 36%, rgba(0, 0, 0, 0.55) 54%,
+    rgba(0, 0, 0, 0.9) 70%, #000 82%);
+  /* Va y vuelve en vez de reiniciar: así el ciclo no tiene salto visible.
+     90s es deliberadamente lento — se percibe como atmósfera, no como animación. */
+  animation: ax-deriva 90s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes ax-deriva {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-2.5%, 1.4%, 0) scale(1.05); }
+}
+
 
 .hero-inner { position: relative; }
 .hero-inner > * { max-width: min(100%, 620px); }
